@@ -42,6 +42,10 @@ jobs:
       # OpenClaw GitHub PAT (repo + workflow scopes) — used by Alex to push code + open PRs
       TF_VAR_github_token: ${{ secrets.OPENCLAW_GITHUB_TOKEN }}
 
+      # Classic GitHub PAT with 'copilot' scope — used by OpenClaw to call GitHub Copilot API.
+      # Create at: https://github.com/settings/tokens/new?scopes=copilot (Classic token, not fine-grained)
+      TF_VAR_copilot_pat: ${{ secrets.COPILOT_PAT }}
+
       # In CI runners have dynamic IPs so SSH must be open to all.
       # The NSG still blocks non-SSH ports. For tighter security set this to a
       # static IP or VPN CIDR via the SSH_SOURCE_CIDR secret.

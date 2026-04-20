@@ -1,31 +1,33 @@
-# OpenClaw — Azure-Hosted AI Developer
+# OpenClaw — Azure-Hosted AI Developer Platform
 
 > OpenClaw is an employee. Paperclip is the company.
 
 This repo contains the **infrastructure code and configuration** to host:
 - **[Paperclip](https://paperclip.ing)** — AI company control plane (org chart, goals, budgets, heartbeats)
-- **[OpenClaw](https://openclaw.ai)** — "Alex", your always-on AI developer employee
+- **[OpenClaw](https://openclaw.ai)** — 7 always-on AI agents, each with a specialized role
 
 Both run on a single Azure VM (~$36/mo) with continuous uptime.
 
+🌐 **Live at:** https://openclaw-reevelobo.eastus.cloudapp.azure.com
+
 ---
 
-## What Alex Can Do
+## The Team
 
-| Skill | Description |
-|---|---|
-| Code generation | Write production code in React, Node.js, Python, Go |
-| PR creation | Push a branch and open a GitHub PR |
-| Code review | Review a PR diff and leave comments |
-| Debug & fix | Analyze stack traces, apply fixes |
-| Project scaffold | Generate full-stack project structure |
-| Write tests | Generate unit, integration, e2e tests |
-| CI/CD setup | Create GitHub Actions or Azure DevOps pipelines |
+| Agent | Role | Specialty |
+|---|---|---|
+| **Alex** | engineer | Senior Full-Stack Developer |
+| **Orion** | cto | Principal Architect |
+| **Cipher** | devops | DevSecOps Engineer |
+| **Atlas** | devops | Platform Engineer |
+| **Forge** | devops | Infrastructure Engineer |
+| **Sentinel** | general | Security Specialist |
+| **Horizon** | researcher | Forward Engineering Agent |
 
-Alex uses **GitHub Copilot** as its LLM backend with task-aware model routing:
+All agents use **GitHub Copilot** as their LLM backend with task-aware model routing:
 - **Haiku 4.5** — repetitive / monotonous tasks (boilerplate, formatting)
 - **Sonnet 4.5** — research, creative thinking, architecture decisions
-- **GPT-5.3-Codex** — troubleshooting, logic, debugging
+- **GPT-4o** — troubleshooting, logic, debugging
 
 ---
 
@@ -63,19 +65,19 @@ openClaw/
 │   ├── config.json                 ← OpenClaw persona + model routing config
 │   └── skills/                     ← 7 developer skill definition files
 ├── paperclip/
-│   └── company.yaml                ← Paperclip company + employee config
+│   └── company.yaml                ← Paperclip company + all 7 agent configs
 └── nginx/
     └── openclaw.conf               ← Nginx reverse proxy + SSL config
 ```
 
 ---
 
-## Provision
+## Provision (Fresh Setup)
 
 ### Prerequisites
 - [Terraform ≥ 1.5](https://developer.hashicorp.com/terraform/install)
 - Azure CLI installed and logged in: `az login`
-- SSH key pair at `~/.ssh/id_rsa` / `~/.ssh/id_rsa.pub` (or set custom paths)
+- SSH key pair at `~/.ssh/id_rsa` / `~/.ssh/id_rsa.pub`
 - GitHub Copilot subscription active
 
 ### Step 1 — Configure
@@ -83,10 +85,18 @@ openClaw/
 ```bash
 cd infra/terraform
 cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars: set dns_label (must be unique) and optionally ssh_source_cidr
 ```
 
-### Step 2 — Provision + Bootstrap (single command)
+Edit `terraform.tfvars`:
+- `dns_label` — unique DNS label (e.g. `openclaw-yourname`)
+- `github_token` — classic PAT with `repo` + `workflow` scopes
+- `copilot_pat` — classic PAT with `copilot` scope ([create here](https://github.com/settings/tokens/new?scopes=copilot))
+- `ssh_source_cidr` — restrict to your IP for security
+
+> ⚠️ `copilot_pat` **must be a classic PAT** (`ghp_...`), not a fine-grained token.
+> Fine-grained tokens do not support the Copilot API scope.
+
+### Step 2 — Provision + Bootstrap
 
 ```bash
 terraform init
@@ -95,23 +105,20 @@ terraform apply openclaw.tfplan
 ```
 
 `terraform apply` does everything in order:
-
 1. Creates resource group, VNet, NSG, static IP, NIC, and VM
-2. SSHes into the VM and runs `vm-setup.sh` (installs Node 22, pnpm, Nginx, Paperclip + OpenClaw as systemd daemons)
-3. Deploys `openclaw/config.json` + all skills to `~/.openclaw/`
+2. SSHes into the VM and runs `vm-setup.sh`:
+   - Installs Node 22, pnpm, Nginx, certbot
+   - Installs Paperclip + OpenClaw as systemd daemons
+   - Writes `auth-profiles.json` from `copilot_pat` (if set)
+   - Configures OpenClaw model routing
+   - Runs certbot to get Let's Encrypt SSL
+3. Deploys `openclaw/config.json` + all skills
 4. Deploys `paperclip/company.yaml`
-5. Deploys `nginx/openclaw.conf` and reloads Nginx
+5. Deploys `nginx/openclaw.conf`
 
-At the end it prints:
+### Step 3 — (If copilot_pat was not set) Authenticate manually
 
-```
-public_ip_address   = "x.x.x.x"
-fqdn                = "openclaw-yourname.eastus.cloudapp.azure.com"
-ssh_command         = "ssh azureuser@x.x.x.x"
-copilot_auth_command = "ssh azureuser@x.x.x.x 'openclaw models auth login-github-copilot'"
-```
-
-### Step 3 — Authenticate GitHub Copilot (one-time, interactive)
+If you didn't set `copilot_pat` in tfvars, authenticate interactively:
 
 ```bash
 ssh azureuser@$(terraform output -raw public_ip_address)
@@ -119,22 +126,28 @@ openclaw models auth login-github-copilot
 # Opens a device-flow URL — visit it, enter the code, approve
 ```
 
-### Step 4 — SSL (optional, requires a domain)
+### Step 4 — Validate
 
-```bash
-ssh azureuser@$(terraform output -raw public_ip_address) \
-  'sudo certbot --nginx -d your-domain.com'
-```
+Open the Paperclip dashboard at `https://<your-fqdn>`, assign a task to any agent,
+and watch the agent execute: e.g. *"Scaffold a FastAPI todo app with PostgreSQL"*.
 
-### Step 5 — Register Alex in Paperclip
+---
 
-Open `http://$(terraform output -raw public_ip_address):3100`, sign in,
-and import `paperclip/company.yaml` to register Alex as a Developer employee.
+## GitHub Actions CI/CD
 
-### Step 6 — Validate
+The `.github/workflows/deploy.yml` pipeline runs `terraform plan` on every PR and
+`terraform apply` on every push to `main`. Required repository secrets:
 
-Assign a task in Paperclip: *"Scaffold a FastAPI todo app with PostgreSQL"*  
-Alex receives the heartbeat, uses GPT-5.3-Codex for logic, writes code, opens a PR.
+| Secret | Description |
+|---|---|
+| `ARM_CLIENT_ID` | Azure service principal client ID |
+| `ARM_CLIENT_SECRET` | Azure service principal secret |
+| `ARM_SUBSCRIPTION_ID` | Azure subscription ID |
+| `ARM_TENANT_ID` | Azure tenant ID |
+| `OPENCLAW_GITHUB_TOKEN` | Classic PAT (`repo` + `workflow` scopes) |
+| `COPILOT_PAT` | Classic PAT with `copilot` scope |
+| `SSH_PRIVATE_KEY` | Private key for VM SSH access |
+| `SSH_PUBLIC_KEY` | Corresponding public key |
 
 ---
 
@@ -145,25 +158,11 @@ cd infra/terraform
 terraform destroy
 ```
 
-This destroys **all** Azure resources (VM, NIC, NSG, VNet, public IP, resource group) in
-the correct dependency order. No manual cleanup needed.
+Destroys all Azure resources in the correct dependency order.
 
 ---
 
-## Re-deploy config changes
-
-Terraform detects changes to `openclaw/config.json`, skills, `paperclip/company.yaml`,
-and `nginx/openclaw.conf` via SHA-256 triggers. To push updates:
-
-```bash
-# Edit any config file, then:
-cd infra/terraform
-terraform apply
-```
-
----
-
-## Update OpenClaw / Paperclip software
+## Update Agents / Software
 
 ```bash
 # Update OpenClaw
@@ -173,4 +172,14 @@ ssh azureuser@$(terraform output -raw public_ip_address) \
 # Update Paperclip
 ssh azureuser@$(terraform output -raw public_ip_address) \
   'cd ~/paperclip && git pull && pnpm install && pnpm build && sudo systemctl restart paperclip'
+```
+
+## Re-deploy Config Changes
+
+Terraform detects changes to config files via SHA-256 triggers. To push updates:
+
+```bash
+# Edit any config file, then:
+cd infra/terraform
+terraform apply
 ```

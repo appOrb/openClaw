@@ -22,3 +22,10 @@ ssh_source_cidr = "*"
 # Get one at: https://github.com/settings/tokens
 # This is marked sensitive — never written to state or logs.
 github_token = "ghp_REPLACE_ME"
+
+# Classic GitHub PAT with 'copilot' scope — used by OpenClaw to call GitHub Copilot API.
+# Create at: https://github.com/settings/tokens/new?scopes=copilot
+# Must be a CLASSIC PAT (ghp_...), not a fine-grained token.
+# Leave empty ("") to skip — you can then authenticate manually via:
+#   ssh azureuser@VM openclaw models auth login-github-copilot
+copilot_pat = ""

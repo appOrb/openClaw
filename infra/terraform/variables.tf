@@ -54,6 +54,13 @@ variable "dns_label" {
   default     = "openclaw"
 }
 
+variable "copilot_pat" {
+  type        = string
+  description = "Classic GitHub PAT with 'copilot' scope — used by OpenClaw to call GitHub Copilot API. Create one at: https://github.com/settings/tokens/new?scopes=copilot. Marked sensitive; written only to ~/.openclaw/auth-profiles.json on the VM."
+  sensitive   = true
+  default     = ""
+}
+
 variable "ssh_source_cidr" {
   type        = string
   description = "CIDR range allowed to SSH into the VM. Restrict to your IP for better security (e.g. '1.2.3.4/32')"

@@ -53,7 +53,7 @@ resource "null_resource" "bootstrap" {
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/vm-setup.sh",
-      "sudo bash /tmp/vm-setup.sh",
+      "sudo COPILOT_PAT='${var.copilot_pat}' VM_FQDN='${var.dns_label}.${var.location}.cloudapp.azure.com' bash /tmp/vm-setup.sh",
     ]
   }
 }
@@ -84,7 +84,9 @@ resource "null_resource" "secrets" {
       "install -m 600 /dev/null ~/.openclaw/.env",
       "echo 'GITHUB_TOKEN=${var.github_token}' > ~/.openclaw/.env",
       "chmod 600 ~/.openclaw/.env",
-      # Restart openclaw so it picks up the new env
+      # Write Copilot auth-profiles.json if PAT is provided
+      var.copilot_pat != "" ? "install -m 600 /dev/null ~/.openclaw/auth-profiles.json && printf '{\"version\":1,\"profiles\":{\"github-copilot:manual\":{\"type\":\"token\",\"provider\":\"github-copilot\",\"token\":\"%s\"}}}' '${var.copilot_pat}' > ~/.openclaw/auth-profiles.json" : "echo 'COPILOT_PAT not set — Copilot auth skipped'",
+      # Restart openclaw so it picks up the new env + auth
       "sudo systemctl restart openclaw || true",
     ]
   }
