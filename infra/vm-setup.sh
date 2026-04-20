@@ -5,6 +5,9 @@
 
 set -euo pipefail
 
+DEPLOY_USER="${SUDO_USER:-azureuser}"
+DEPLOY_HOME="/home/${DEPLOY_USER}"
+
 echo "══════════════════════════════════════════════"
 echo "  OpenClaw VM Bootstrap"
 echo "══════════════════════════════════════════════"
@@ -21,7 +24,7 @@ sudo apt-get install -y -qq \
 # ── Node.js 22 ────────────────────────────────────────────────────────────────
 if ! node --version 2>/dev/null | grep -q "^v22"; then
   echo "==> Installing Node.js 22"
-  curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash - -qq
+  curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
   sudo apt-get install -y -qq nodejs
 fi
 echo "    Node: $(node --version)  npm: $(npm --version)"
@@ -39,34 +42,36 @@ echo "==> Installing OpenClaw"
 npm install -g openclaw@latest --quiet
 echo "    openclaw: $(openclaw --version 2>/dev/null || echo 'installed')"
 
-mkdir -p ~/.openclaw/skills
+mkdir -p "${DEPLOY_HOME}/.openclaw/skills"
+chown -R "${DEPLOY_USER}:${DEPLOY_USER}" "${DEPLOY_HOME}/.openclaw"
 
 # ── Paperclip ─────────────────────────────────────────────────────────────────
 echo ""
 echo "==> Installing Paperclip"
-if [ ! -d ~/paperclip ]; then
-  git clone https://github.com/paperclipai/paperclip.git ~/paperclip --quiet
+PAPERCLIP_DIR="${DEPLOY_HOME}/paperclip"
+if [ ! -d "${PAPERCLIP_DIR}" ]; then
+  sudo -u "${DEPLOY_USER}" git clone https://github.com/paperclipai/paperclip.git "${PAPERCLIP_DIR}" --quiet
 fi
-cd ~/paperclip
-git pull --quiet
-pnpm install --silent
-pnpm build --silent
+cd "${PAPERCLIP_DIR}"
+sudo -u "${DEPLOY_USER}" git pull --quiet
+sudo -u "${DEPLOY_USER}" pnpm install --silent
+sudo -u "${DEPLOY_USER}" pnpm build
 echo "    Paperclip built ✓"
 cd ~
 
 # ── Systemd: Paperclip ────────────────────────────────────────────────────────
 echo ""
 echo "==> Creating systemd service: paperclip"
-sudo tee /etc/systemd/system/paperclip.service > /dev/null << 'UNIT'
+cat > /etc/systemd/system/paperclip.service << UNIT
 [Unit]
 Description=Paperclip AI Company Control Plane
 After=network.target
 
 [Service]
 Type=simple
-User=azureuser
-WorkingDirectory=/home/azureuser/paperclip
-ExecStart=/usr/bin/node dist/server/index.js
+User=${DEPLOY_USER}
+WorkingDirectory=${DEPLOY_HOME}/paperclip
+ExecStart=/usr/bin/node ${DEPLOY_HOME}/paperclip/dist/server/index.js
 Restart=always
 RestartSec=5
 Environment=NODE_ENV=production
@@ -76,45 +81,44 @@ Environment=PORT=3100
 WantedBy=multi-user.target
 UNIT
 
-sudo systemctl daemon-reload
-sudo systemctl enable paperclip
-sudo systemctl restart paperclip
+systemctl daemon-reload
+systemctl enable paperclip
+systemctl restart paperclip
 echo "    paperclip.service started ✓"
 
 # ── Systemd: OpenClaw ─────────────────────────────────────────────────────────
 echo ""
 echo "==> Creating systemd service: openclaw"
-sudo tee /etc/systemd/system/openclaw.service > /dev/null << 'UNIT'
+OPENCLAW_BIN="$(which openclaw 2>/dev/null || echo '/usr/local/bin/openclaw')"
+cat > /etc/systemd/system/openclaw.service << UNIT
 [Unit]
 Description=OpenClaw AI Developer Employee (Alex)
 After=network.target
 
 [Service]
 Type=simple
-User=azureuser
-WorkingDirectory=/home/azureuser
-ExecStart=/usr/bin/openclaw start --daemon-mode
+User=${DEPLOY_USER}
+WorkingDirectory=${DEPLOY_HOME}
+ExecStart=${OPENCLAW_BIN} start
 Restart=always
 RestartSec=5
 Environment=NODE_ENV=production
-# Secrets file written by Terraform (not in source control)
-# Contains: GITHUB_TOKEN=<token>
-EnvironmentFile=-/home/azureuser/.openclaw/.env
+EnvironmentFile=-${DEPLOY_HOME}/.openclaw/.env
 
 [Install]
 WantedBy=multi-user.target
 UNIT
 
-sudo systemctl daemon-reload
-sudo systemctl enable openclaw
-sudo systemctl restart openclaw
-echo "    openclaw.service started ✓"
+systemctl daemon-reload
+systemctl enable openclaw
+systemctl restart openclaw || echo "    openclaw will start after: openclaw models auth login-github-copilot"
+echo "    openclaw.service enabled ✓"
 
 # ── Nginx ─────────────────────────────────────────────────────────────────────
 echo ""
 echo "==> Enabling Nginx"
-sudo systemctl enable nginx
-sudo systemctl start nginx
+systemctl enable nginx
+systemctl start nginx
 echo "    nginx started ✓"
 
 # ── Status summary ────────────────────────────────────────────────────────────
