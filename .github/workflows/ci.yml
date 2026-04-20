@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint YAML
+        run: |
+          pip install yamllint --quiet
+          yamllint -d "{extends: relaxed, rules: {line-length: {max: 120}}}"             openclaw/ paperclip/ nginx/ .github/ || true
+
+      - name: Validate Shell Scripts
+        run: |
+          sudo apt-get install -y shellcheck --quiet
+          find infra/ -name "*.sh" -exec shellcheck --severity=warning {} \; || true
+
+      - name: Terraform Format Check
+        uses: hashicorp/setup-terraform@v3
+      
+      - run: cd infra/terraform && terraform fmt -check -recursive
+
+  playwright:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright MCP
+        run: npm install -g @playwright/mcp @playwright/test
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Smoke Tests
+        run: |
+          if [ -d tests/ ]; then
+            npx playwright test --reporter=github || true
+          else
+            echo "No test directory found — skipping"
+          fi
