@@ -96,6 +96,34 @@ agents:
       Technology radar, emerging tech evaluation, proof-of-concept spikes,
       R&D initiatives, competitive analysis, innovation proposals, bleeding-edge tooling adoption.
 
+  - id: "d4e5f6a7-b8c9-0123-defa-456789abcdef"
+    name: Vera
+    role: qa
+    title: "QA Engineer"
+    icon: test-tube
+    reportsTo: Nadia
+    mcp:
+      servers:
+        - playwright
+    capabilities: >
+      End-to-end testing via Playwright MCP, Vitest unit and integration tests,
+      WCAG 2.1 AA accessibility scanning with axe-core, visual regression testing,
+      full OIDC/Keycloak auth flow validation, API smoke testing, CI quality gates,
+      bug reproduction and trace capture, test coverage reporting.
+    skills:
+      - playwright-mcp
+      - vitest-playwright
+      - write-tests
+      - debug-error
+      - code-review
+    environment:
+      baseUrl: "https://openclaw-reevelobo.eastus.cloudapp.azure.com"
+      testPaths:
+        - tests/e2e/smoke.spec.ts
+        - tests/e2e/auth.spec.ts
+        - tests/e2e/paperclip.spec.ts
+        - tests/e2e/accessibility.spec.ts
+
 governance:
   requireBoardApprovalForNewAgents: false
   requireApprovalFor:
