@@ -250,7 +250,60 @@ else
   echo "    Run manually: certbot --nginx -d <your-fqdn> --non-interactive --agree-tos -m admin@openclaw.dev"
 fi
 
-# ── Status summary ────────────────────────────────────────────────────────────
+# ── Patch Paperclip agent gateway URLs (HTTPS required) ───────────────────────
+# Paperclip's openclaw_gateway adapter requires https:// — patch all agents after
+# nginx+SSL is up so they use https://<fqdn>/gateway instead of http://localhost:18791
+HTTPS_GATEWAY="https://${VM_FQDN:-localhost}/gateway"
+if [ -n "${VM_FQDN}" ]; then
+  echo ""
+  echo "==> Patching Paperclip agent gateway URLs → ${HTTPS_GATEWAY}"
+  PAPERCLIP_TOKEN=$(python3 -c "
+import json
+try:
+    d = json.load(open('${DEPLOY_HOME}/.openclaw/openclaw.json'))
+    print(d.get('gateway',{}).get('auth',{}).get('token',''))
+except:
+    print('')
+" 2>/dev/null)
+
+  COMPANY_ID="41855410-d35f-4118-a13a-429c50a4640a"
+  for agent_id in \
+    "3ed8675d-fec3-4bc0-9bfe-d01d6a6d9001" \
+    "c8ddaaf4-7a4f-4a47-aa42-b3191dce1718" \
+    "a9748c33-b78d-47de-b1e7-0bd3202fc69d" \
+    "c52f3158-93a4-48ed-85c4-659e9bdac0a0" \
+    "2e0aed27-3a1e-403d-a4b6-823713bac814" \
+    "faf29032-8ae3-4d4d-8b51-744e2c33f291" \
+    "ef83801f-587b-4e27-b935-1592e1285a6a"
+  do
+    current=$(curl -s "http://localhost:3100/api/agents/${agent_id}" \
+      -H "Authorization: Bearer ${PAPERCLIP_TOKEN}")
+    device_key=$(echo "$current" | python3 -c \
+      "import sys,json; d=json.load(sys.stdin); print(d.get('adapterConfig',{}).get('devicePrivateKeyPem',''))" 2>/dev/null || echo "")
+    payload=$(python3 -c "
+import json
+print(json.dumps({
+  'adapterConfig': {
+    'url': '${HTTPS_GATEWAY}',
+    'headers': {'x-openclaw-token': '${PAPERCLIP_TOKEN}'},
+    'waitTimeoutMs': 30000,
+    'devicePrivateKeyPem': '''${device_key}'''
+  },
+  'status': 'idle',
+  'heartbeat': {'enabled': True}
+}))
+")
+    http_code=$(curl -s -o /dev/null -w "%{http_code}" \
+      -X PATCH "http://localhost:3100/api/agents/${agent_id}" \
+      -H "Authorization: Bearer ${PAPERCLIP_TOKEN}" \
+      -H "Content-Type: application/json" \
+      -d "$payload")
+    echo "    agent ${agent_id}: HTTP ${http_code}"
+  done
+  echo "    Agent gateway URLs patched ✓"
+fi
+
+
 echo ""
 echo "══════════════════════════════════════════════"
 echo "  Bootstrap complete!"
