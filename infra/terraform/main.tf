@@ -170,10 +170,51 @@ resource "null_resource" "paperclip_config" {
   }
 }
 
+# ── Deploy Keycloak + oauth2-proxy ───────────────────────────────────────────
+# Keycloak runs in Docker (port 8080, internal only).
+# oauth2-proxy (port 4180) sits between Nginx and Paperclip, enforcing OIDC login.
+# Nginx is updated AFTER these services are running (see nginx_config below).
+
+resource "null_resource" "keycloak_setup" {
+  depends_on = [null_resource.bootstrap]
+
+  triggers = {
+    vm_id       = module.vm.vm_id
+    realm_sha   = filesha256("${path.root}/../../keycloak/realm-export.json")
+    compose_sha = filesha256("${path.root}/../../keycloak/docker-compose.yml")
+    setup_sha   = filesha256("${path.root}/../keycloak-setup.sh")
+  }
+
+  connection {
+    type        = "ssh"
+    host        = module.networking.public_ip_address
+    user        = var.admin_username
+    private_key = file(var.ssh_private_key_path)
+    timeout     = "15m"
+  }
+
+  provisioner "file" {
+    source      = "${path.root}/../../keycloak/"
+    destination = "/tmp/keycloak"
+  }
+
+  provisioner "file" {
+    source      = "${path.root}/../keycloak-setup.sh"
+    destination = "/tmp/keycloak-setup.sh"
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/keycloak-setup.sh",
+      "sudo KC_ADMIN_PASSWORD='${var.keycloak_admin_password}' KC_CLIENT_SECRET='${var.keycloak_client_secret}' OAUTH2_COOKIE_SECRET='${var.oauth2_proxy_cookie_secret}' VM_FQDN='${var.dns_label}.${var.location}.cloudapp.azure.com' DEPLOY_HOME='/home/${var.admin_username}' DEPLOY_USER='${var.admin_username}' KEYCLOAK_DIR='/home/${var.admin_username}/keycloak' bash /tmp/keycloak-setup.sh",
+    ]
+  }
+}
+
 # ── Deploy Nginx config ───────────────────────────────────────────────────────
 
 resource "null_resource" "nginx_config" {
-  depends_on = [null_resource.bootstrap]
+  depends_on = [null_resource.keycloak_setup]
 
   triggers = {
     nginx_sha = filesha256("${path.root}/../../nginx/openclaw.conf")

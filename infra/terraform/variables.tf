@@ -73,3 +73,21 @@ variable "ssh_source_cidr" {
   description = "CIDR range allowed to SSH into the VM. Restrict to your IP for better security (e.g. '1.2.3.4/32')"
   default     = "*"
 }
+
+variable "keycloak_admin_password" {
+  type        = string
+  description = "Admin password for the Keycloak master realm (≥ 8 characters). Used to access the Keycloak admin console via SSH tunnel."
+  sensitive   = true
+}
+
+variable "keycloak_client_secret" {
+  type        = string
+  description = "OIDC client secret for the Paperclip client in Keycloak. Use a random UUID or strong random string (e.g. uuidgen)."
+  sensitive   = true
+}
+
+variable "oauth2_proxy_cookie_secret" {
+  type        = string
+  description = "Cookie encryption secret for oauth2-proxy. Generated from 32 random bytes then base64-encoded (produces a 44-char string). Generate with: openssl rand -base64 32"
+  sensitive   = true
+}

@@ -36,3 +36,21 @@ copilot_pat = ""
 # Must be a CLASSIC PAT (ghp_...), not a fine-grained token.
 # Leave empty ("") to skip — run infra/vm-auth-setup.sh manually after provisioning.
 github_agent_pat = ""
+
+# ── Keycloak + oauth2-proxy (Login Security) ─────────────────────────────────
+# Keycloak is the Identity Provider (IdP) that protects the Paperclip dashboard.
+# oauth2-proxy sits between Nginx and Paperclip, requiring a valid Keycloak login.
+
+# Admin password for the Keycloak master realm (≥ 8 characters).
+# Access the admin console via SSH tunnel:
+#   ssh -L 8080:localhost:8080 azureuser@VM_IP
+#   Then open: http://localhost:8080/admin
+keycloak_admin_password = "REPLACE_ME_strong_password"
+
+# OIDC client secret for the Paperclip client in Keycloak.
+# Use a random UUID: uuidgen
+keycloak_client_secret = "REPLACE_ME_uuid_here"
+
+# Cookie encryption secret for oauth2-proxy.
+# Generate 32 random bytes and base64-encode them: openssl rand -base64 32
+oauth2_proxy_cookie_secret = "REPLACE_ME_base64_32bytes"
