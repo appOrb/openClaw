@@ -46,5 +46,20 @@
   "memory": {
     "enabled": true,
     "persistAcrossSessions": true
+  },
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "mode": "none"
+    }
+  },
+  "mcp": {
+    "servers": {
+      "playwright": {
+        "command": "npx",
+        "args": ["@playwright/mcp", "--browser", "chromium", "--headless"],
+        "enabled": true
+      }
+    }
   }
 }
