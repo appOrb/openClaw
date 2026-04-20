@@ -71,11 +71,13 @@ After=network.target
 Type=simple
 User=${DEPLOY_USER}
 WorkingDirectory=${DEPLOY_HOME}/paperclip
-ExecStart=/usr/bin/node ${DEPLOY_HOME}/paperclip/dist/server/index.js
+ExecStart=/usr/bin/node --import ./server/node_modules/tsx/dist/loader.mjs server/dist/index.js
 Restart=always
 RestartSec=5
 Environment=NODE_ENV=production
 Environment=PORT=3100
+Environment=PAPERCLIP_MIGRATION_PROMPT=never
+Environment=PAPERCLIP_MIGRATION_AUTO_APPLY=true
 
 [Install]
 WantedBy=multi-user.target
@@ -99,7 +101,7 @@ After=network.target
 Type=simple
 User=${DEPLOY_USER}
 WorkingDirectory=${DEPLOY_HOME}
-ExecStart=${OPENCLAW_BIN} start
+ExecStart=${OPENCLAW_BIN} gateway
 Restart=always
 RestartSec=5
 Environment=NODE_ENV=production
@@ -111,6 +113,32 @@ UNIT
 
 systemctl daemon-reload
 systemctl enable openclaw
+
+# Pre-configure openclaw gateway settings so it starts without the interactive wizard
+sudo -u "${DEPLOY_USER}" bash -c "
+  mkdir -p '${DEPLOY_HOME}/.openclaw'
+  CONFIG='${DEPLOY_HOME}/.openclaw/openclaw.json'
+  if [ ! -f \"\$CONFIG\" ] || ! python3 -c \"import json; d=json.load(open('\$CONFIG')); exit(0 if 'gateway' in d else 1)\" 2>/dev/null; then
+    python3 - << 'PYEOF'
+import json, os
+config_path = os.path.expanduser('${DEPLOY_HOME}/.openclaw/openclaw.json')
+try:
+    with open(config_path) as f:
+        cfg = json.load(f)
+except (FileNotFoundError, json.JSONDecodeError):
+    cfg = {}
+cfg.setdefault('models', {})
+cfg.setdefault('skills', {})
+cfg.setdefault('memory', {})
+cfg['gateway'] = {'mode': 'local', 'auth': {'mode': 'none'}}
+os.makedirs(os.path.dirname(config_path), exist_ok=True)
+with open(config_path, 'w') as f:
+    json.dump(cfg, f, indent=2)
+print('openclaw config seeded with gateway.mode=local')
+PYEOF
+  fi
+"
+
 systemctl restart openclaw || echo "    openclaw will start after: openclaw models auth login-github-copilot"
 echo "    openclaw.service enabled ✓"
 
