@@ -9,6 +9,26 @@ company:
 # Agents are live at http://13.92.42.136 (Paperclip dashboard).
 
 agents:
+  - id: "b1a2c3d4-e5f6-7890-abcd-ef1234567890"
+    name: Apex
+    role: ceo
+    title: "Chief Executive Officer"
+    icon: crown
+    capabilities: >
+      Company strategy, vision setting, cross-functional leadership, stakeholder
+      management, OKR definition, hiring decisions, executive communications,
+      investor relations, roadmap prioritisation, and final decision authority.
+
+  - id: "f0e9d8c7-b6a5-4321-fedc-ba9876543210"
+    name: Maven
+    role: cmo
+    title: "Chief Marketing Officer"
+    icon: megaphone
+    capabilities: >
+      Brand strategy, go-to-market planning, content marketing, demand generation,
+      product positioning, SEO/SEM oversight, social media strategy, developer
+      relations, competitive intelligence, and growth metrics.
+
   - id: "3ed8675d-fec3-4bc0-9bfe-d01d6a6d9001"
     name: Alex
     role: engineer
