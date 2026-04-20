@@ -168,35 +168,12 @@ AUTHEOF
 "
 
 # ── OpenClaw model configuration ─────────────────────────────────────────────
+# Use the CLI to set the model — writing directly to JSON risks invalid schema.
+# Correct key is agents.defaults.model (not models.default which crashes openclaw).
 echo ""
 echo "==> Configuring OpenClaw models"
-sudo -u "${DEPLOY_USER}" python3 - << 'PYEOF'
-import json, os
-
-config_path = os.path.expanduser('~/.openclaw/openclaw.json')
-try:
-    with open(config_path) as f:
-        cfg = json.load(f)
-except (FileNotFoundError, json.JSONDecodeError):
-    cfg = {}
-
-# Model routing strategy:
-# - Haiku 4.5: repetitive/monotonous tasks (boilerplate, formatting, renaming)
-# - Sonnet 4.5: research, architecture, creative thinking
-# - gpt-4o: troubleshooting, debugging, logic
-cfg['models'] = {
-    "default": "github-copilot/gpt-4o",
-    "profiles": {
-        "repetitive": "github-copilot/claude-haiku-4.5",
-        "research": "github-copilot/claude-sonnet-4.5",
-        "debug": "github-copilot/gpt-4o"
-    }
-}
-
-with open(config_path, 'w') as f:
-    json.dump(cfg, f, indent=2)
-print('    openclaw models configured ✓')
-PYEOF
+sudo -u "${DEPLOY_USER}" openclaw config set agents.defaults.model github-copilot/gpt-4o
+echo "    openclaw model set to github-copilot/gpt-4o ✓"
 
 systemctl restart openclaw
 echo "    openclaw restarted with model config ✓"
