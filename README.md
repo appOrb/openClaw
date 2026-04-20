@@ -4,7 +4,7 @@
 
 This repo contains the **infrastructure code and configuration** to host:
 - **[Paperclip](https://paperclip.ing)** — AI company control plane (org chart, goals, budgets, heartbeats)
-- **[OpenClaw](https://openclaw.ai)** — 7 always-on AI agents, each with a specialized role
+- **[OpenClaw](https://openclaw.ai)** — 9 always-on AI agents, each with a specialized role
 
 Both run on a single Azure VM (~$36/mo) with continuous uptime.
 
@@ -16,8 +16,10 @@ Both run on a single Azure VM (~$36/mo) with continuous uptime.
 
 | Agent | Role | Specialty |
 |---|---|---|
-| **Alex** | engineer | Senior Full-Stack Developer |
+| **Apex** | ceo | Chief Executive Officer |
+| **Maven** | cmo | Chief Marketing Officer |
 | **Orion** | cto | Principal Architect |
+| **Alex** | engineer | Senior Full-Stack Developer |
 | **Cipher** | devops | DevSecOps Engineer |
 | **Atlas** | devops | Platform Engineer |
 | **Forge** | devops | Infrastructure Engineer |
