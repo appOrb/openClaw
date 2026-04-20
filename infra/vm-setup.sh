@@ -252,11 +252,12 @@ fi
 
 # ── Patch Paperclip agent gateway URLs (HTTPS required) ───────────────────────
 # Paperclip's openclaw_gateway adapter requires https:// — patch all agents after
-# nginx+SSL is up so they use https://<fqdn>/gateway instead of http://localhost:18791
-HTTPS_GATEWAY="https://${VM_FQDN:-localhost}/gateway"
+# nginx+SSL is up so they use wss://<fqdn>/gateway instead of http://localhost:18791
+# IMPORTANT: openclaw_gateway adapter ONLY accepts ws:// or wss:// URLs (not http/https)
+WSS_GATEWAY="wss://${VM_FQDN:-localhost}/gateway"
 if [ -n "${VM_FQDN}" ]; then
   echo ""
-  echo "==> Patching Paperclip agent gateway URLs → ${HTTPS_GATEWAY}"
+  echo "==> Patching Paperclip agent gateway URLs → ${WSS_GATEWAY}"
   PAPERCLIP_TOKEN=$(python3 -c "
 import json
 try:
@@ -284,7 +285,7 @@ except:
 import json
 print(json.dumps({
   'adapterConfig': {
-    'url': '${HTTPS_GATEWAY}',
+    'url': '${WSS_GATEWAY}',
     'headers': {'x-openclaw-token': '${PAPERCLIP_TOKEN}'},
     'waitTimeoutMs': 30000,
     'devicePrivateKeyPem': '''${device_key}'''
@@ -300,7 +301,7 @@ print(json.dumps({
       -d "$payload")
     echo "    agent ${agent_id}: HTTP ${http_code}"
   done
-  echo "    Agent gateway URLs patched ✓"
+    echo "    Agent gateway URLs patched (wss://) ✓"
 fi
 
 

@@ -6,9 +6,9 @@ company:
 
 # All agents use the openclaw_gateway adapter pointing to the OpenClaw daemon (port 18791).
 # The gateway token is stored in ~/.openclaw/openclaw.json on the VM.
-# IMPORTANT: Paperclip requires https:// URLs for the openclaw_gateway adapter.
-# Agents connect via: https://openclaw-reevelobo.eastus.cloudapp.azure.com/gateway
-# (nginx proxies /gateway/ → http://127.0.0.1:18791)
+# IMPORTANT: Paperclip's openclaw_gateway adapter ONLY accepts ws:// or wss:// URLs.
+# Agents connect via: wss://openclaw-reevelobo.eastus.cloudapp.azure.com/gateway
+# (nginx proxies /gateway/ → ws://127.0.0.1:18791 with WebSocket Upgrade support)
 # Agents are live at https://openclaw-reevelobo.eastus.cloudapp.azure.com
 
 agents:
