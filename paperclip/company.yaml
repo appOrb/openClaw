@@ -1,46 +1,80 @@
 company:
+  id: "41855410-d35f-4118-a13a-429c50a4640a"   # Paperclip company ID (live on Azure VM)
   name: "OpenClaw Dev Co"
   mission: "Autonomously build and ship production-quality software"
   timezone: "UTC"
 
-employees:
-  - id: alex-developer
+# All agents use the openclaw_gateway adapter pointing to the OpenClaw daemon (port 18791).
+# The gateway token is stored in ~/.openclaw/openclaw.json on the VM.
+# Agents are live at http://13.92.42.136 (Paperclip dashboard).
+
+agents:
+  - id: "3ed8675d-fec3-4bc0-9bfe-d01d6a6d9001"
     name: Alex
-    role: Senior Full-Stack Developer
-    type: openclaw                        # agent type: openclaw daemon
+    role: engineer
+    title: "Senior Full-Stack Developer"
+    icon: code
+    capabilities: >
+      Code generation, PR creation, code review, debugging, test writing,
+      project scaffolding, CI/CD setup. Proficient in React, Node.js,
+      Python, Go, TypeScript.
 
-    # Where Paperclip sends the heartbeat signal
-    endpoint: "http://localhost:4000/heartbeat"
+  - id: "c8ddaaf4-7a4f-4a47-aa42-b3191dce1718"
+    name: Orion
+    role: cto
+    title: "Principal Architect"
+    icon: brain
+    capabilities: >
+      System design, technical architecture, ADR documentation, technology
+      selection, scalability planning, API design, distributed systems patterns.
 
-    # How often Paperclip wakes Alex up to check for tasks
-    heartbeat:
-      schedule: "*/15 * * * *"           # every 15 minutes
-      timeout: 30                         # seconds before declared unresponsive
+  - id: "a9748c33-b78d-47de-b1e7-0bd3202fc69d"
+    name: Cipher
+    role: devops
+    title: "DevSecOps Engineer"
+    icon: shield
+    capabilities: >
+      Security audits, SAST/DAST scanning, secret management, compliance
+      checks, threat modeling, secure pipeline configuration, vulnerability triage.
 
-    # Budget: tracked within Copilot subscription (no per-token cost)
-    # This cap controls task frequency, not spend
-    budget:
-      maxTasksPerDay: 50
-      maxConcurrentTasks: 3
+  - id: "c52f3158-93a4-48ed-85c4-659e9bdac0a0"
+    name: Atlas
+    role: devops
+    title: "Platform Engineer"
+    icon: circuit-board
+    capabilities: >
+      Internal developer platform, golden paths, self-service portals,
+      developer productivity tooling, onboarding automation.
 
-    capabilities:
-      - code-generation
-      - pr-creation
-      - code-review
-      - debug-error
-      - scaffold-project
-      - write-tests
-      - setup-ci
+  - id: "2e0aed27-3a1e-403d-a4b6-823713bac814"
+    name: Forge
+    role: devops
+    title: "Infrastructure Engineer"
+    icon: wrench
+    capabilities: >
+      Terraform provisioning, cloud infrastructure, Kubernetes cluster
+      management, cost optimization, disaster recovery, networking, storage.
 
-    context:
-      defaultRepo: ""                     # fill in: owner/repo  e.g. "acme/api"
-      defaultBranch: main
-      codebaseLanguages:
-        - TypeScript
-        - Python
-        - Go
+  - id: "faf29032-8ae3-4d4d-8b51-744e2c33f291"
+    name: Sentinel
+    role: general
+    title: "Security Specialist"
+    icon: lock
+    capabilities: >
+      Zero trust architecture, IAM policies, penetration testing strategy,
+      security posture review, CVE tracking, audit log analysis, compliance frameworks.
+
+  - id: "ef83801f-587b-4e27-b935-1592e1285a6a"
+    name: Horizon
+    role: researcher
+    title: "Forward Engineering Agent"
+    icon: telescope
+    capabilities: >
+      Technology radar, emerging tech evaluation, proof-of-concept spikes,
+      R&D initiatives, competitive analysis, innovation proposals, bleeding-edge tooling adoption.
 
 governance:
+  requireBoardApprovalForNewAgents: false
   requireApprovalFor:
     - deployToProduction
     - deleteFiles
