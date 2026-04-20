@@ -26,8 +26,8 @@ Both run on a single Azure VM (~$36/mo) with continuous uptime.
 
 All agents use **GitHub Copilot** as their LLM backend with task-aware model routing:
 - **Haiku 4.5** — repetitive / monotonous tasks (boilerplate, formatting)
-- **Sonnet 4.5** — research, creative thinking, architecture decisions
-- **GPT-4o** — troubleshooting, logic, debugging
+- **Sonnet 4.5** — research, creative thinking, architecture decisions, default
+- **GPT-5.3-Codex** — troubleshooting, logic, debugging
 
 ---
 

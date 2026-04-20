@@ -116,7 +116,7 @@ Environment=NODE_ENV=production
 Environment=PORT=3100
 Environment=PAPERCLIP_MIGRATION_PROMPT=never
 Environment=PAPERCLIP_MIGRATION_AUTO_APPLY=true
-Environment="PAPERCLIP_ALLOWED_HOSTNAMES=13.92.42.136,openclaw-reevelobo.eastus.cloudapp.azure.com,localhost,127.0.0.1"
+Environment="PAPERCLIP_ALLOWED_HOSTNAMES=${VM_FQDN:-localhost},localhost,127.0.0.1"
 
 [Install]
 WantedBy=multi-user.target
@@ -219,8 +219,8 @@ AUTHEOF
 # Correct key is agents.defaults.model (not models.default which crashes openclaw).
 echo ""
 echo "==> Configuring OpenClaw models"
-sudo -u "${DEPLOY_USER}" openclaw config set agents.defaults.model github-copilot/gpt-4o
-echo "    openclaw model set to github-copilot/gpt-4o ✓"
+sudo -u "${DEPLOY_USER}" openclaw config set agents.defaults.model github-copilot/claude-sonnet-4.5
+echo "    openclaw model set to github-copilot/claude-sonnet-4.5 ✓"
 
 systemctl restart openclaw
 echo "    openclaw restarted with model config ✓"
@@ -252,9 +252,9 @@ fi
 
 # ── Patch Paperclip agent gateway URLs (HTTPS required) ───────────────────────
 # Paperclip's openclaw_gateway adapter requires https:// — patch all agents after
-# nginx+SSL is up so they use wss://<fqdn>/gateway instead of http://localhost:18791
+# nginx+SSL is up so they use wss://<fqdn>/gateway/ instead of http://localhost:18791
 # IMPORTANT: openclaw_gateway adapter ONLY accepts ws:// or wss:// URLs (not http/https)
-WSS_GATEWAY="wss://${VM_FQDN:-localhost}/gateway"
+WSS_GATEWAY="wss://${VM_FQDN:-localhost}/gateway/"
 if [ -n "${VM_FQDN}" ]; then
   echo ""
   echo "==> Patching Paperclip agent gateway URLs → ${WSS_GATEWAY}"
