@@ -78,6 +78,7 @@ Environment=NODE_ENV=production
 Environment=PORT=3100
 Environment=PAPERCLIP_MIGRATION_PROMPT=never
 Environment=PAPERCLIP_MIGRATION_AUTO_APPLY=true
+Environment="PAPERCLIP_ALLOWED_HOSTNAMES=13.92.42.136,openclaw-reevelobo.eastus.cloudapp.azure.com,localhost,127.0.0.1"
 
 [Install]
 WantedBy=multi-user.target
