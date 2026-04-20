@@ -1,0 +1,49 @@
+company:
+  name: "OpenClaw Dev Co"
+  mission: "Autonomously build and ship production-quality software"
+  timezone: "UTC"
+
+employees:
+  - id: alex-developer
+    name: Alex
+    role: Senior Full-Stack Developer
+    type: openclaw                        # agent type: openclaw daemon
+
+    # Where Paperclip sends the heartbeat signal
+    endpoint: "http://localhost:4000/heartbeat"
+
+    # How often Paperclip wakes Alex up to check for tasks
+    heartbeat:
+      schedule: "*/15 * * * *"           # every 15 minutes
+      timeout: 30                         # seconds before declared unresponsive
+
+    # Budget: tracked within Copilot subscription (no per-token cost)
+    # This cap controls task frequency, not spend
+    budget:
+      maxTasksPerDay: 50
+      maxConcurrentTasks: 3
+
+    capabilities:
+      - code-generation
+      - pr-creation
+      - code-review
+      - debug-error
+      - scaffold-project
+      - write-tests
+      - setup-ci
+
+    context:
+      defaultRepo: ""                     # fill in: owner/repo  e.g. "acme/api"
+      defaultBranch: main
+      codebaseLanguages:
+        - TypeScript
+        - Python
+        - Go
+
+governance:
+  requireApprovalFor:
+    - deployToProduction
+    - deleteFiles
+    - pushToMain
+  auditLog: true
+  ticketRequired: false                   # set true to require a ticket for every task

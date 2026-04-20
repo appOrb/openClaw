@@ -1,0 +1,24 @@
+# Copy this to terraform.tfvars and fill in your values.
+# Never commit terraform.tfvars — it is already in .gitignore.
+
+prefix               = "openclaw"
+location             = "eastus"
+environment          = "production"
+vm_size              = "Standard_B2s"
+admin_username       = "azureuser"
+ssh_public_key_path  = "~/.ssh/id_rsa.pub"
+ssh_private_key_path = "~/.ssh/id_rsa"
+
+# Pick a globally unique label for your public IP's FQDN:
+# Result: openclaw-<suffix>.eastus.cloudapp.azure.com
+dns_label = "openclaw-yourname"
+
+# Restrict SSH to your own IP for security (recommended):
+# ssh_source_cidr = "YOUR_PUBLIC_IP/32"
+ssh_source_cidr = "*"
+
+# GitHub PAT for OpenClaw (Alex) to push code and open PRs.
+# Required scopes: repo, workflow
+# Get one at: https://github.com/settings/tokens
+# This is marked sensitive — never written to state or logs.
+github_token = "ghp_REPLACE_ME"

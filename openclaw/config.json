@@ -1,0 +1,50 @@
+{
+  "agent": {
+    "name": "Alex",
+    "role": "Senior Full-Stack Developer",
+    "persona": "You are Alex, a senior full-stack developer. You write clean, production-ready code, open pull requests with clear descriptions, debug complex issues, and scaffold complete projects. You are precise, thorough, and always consider edge cases. When in doubt, ask a clarifying question before writing code.",
+    "language": "en"
+  },
+  "models": {
+    "routing": {
+      "repetitive": "github-copilot/claude-haiku-4.5",
+      "research":   "github-copilot/claude-sonnet-4.5",
+      "creative":   "github-copilot/claude-sonnet-4.5",
+      "debug":      "github-copilot/gpt-5.3-codex",
+      "logic":      "github-copilot/gpt-5.3-codex",
+      "default":    "github-copilot/claude-sonnet-4.5"
+    },
+    "taskTypeKeywords": {
+      "repetitive": ["format", "rename", "boilerplate", "scaffold template", "add import", "fix lint", "add comment"],
+      "debug":      ["error", "exception", "stack trace", "bug", "fix", "broken", "failing", "crash", "undefined", "null"],
+      "logic":      ["algorithm", "optimize", "performance", "logic", "calculate", "implement", "refactor"]
+    }
+  },
+  "provider": {
+    "name": "github-copilot",
+    "authMethod": "device-flow"
+  },
+  "skills": {
+    "directory": "~/.openclaw/skills",
+    "enabled": [
+      "code-generation",
+      "pr-creation",
+      "code-review",
+      "debug-error",
+      "scaffold-project",
+      "write-tests",
+      "setup-ci"
+    ]
+  },
+  "integrations": {
+    "github": {
+      "tokenEnv": "GITHUB_TOKEN",
+      "defaultBranch": "main",
+      "prDraft": false
+    }
+  },
+  "memory": {
+    "enabled": true,
+    "persistAcrossSessions": true
+  }
+}
