@@ -29,3 +29,10 @@ github_token = "ghp_REPLACE_ME"
 # Leave empty ("") to skip — you can then authenticate manually via:
 #   ssh azureuser@VM openclaw models auth login-github-copilot
 copilot_pat = ""
+
+# Classic GitHub PAT for gh CLI on the VM — used by agents to clone/push to org repos.
+# Required scopes: repo, workflow, read:org
+# Create at: https://github.com/settings/tokens/new?scopes=repo,workflow,read:org
+# Must be a CLASSIC PAT (ghp_...), not a fine-grained token.
+# Leave empty ("") to skip — run infra/vm-auth-setup.sh manually after provisioning.
+github_agent_pat = ""

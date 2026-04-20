@@ -53,7 +53,7 @@ resource "null_resource" "bootstrap" {
   provisioner "remote-exec" {
     inline = [
       "chmod +x /tmp/vm-setup.sh",
-      "sudo COPILOT_PAT='${var.copilot_pat}' VM_FQDN='${var.dns_label}.${var.location}.cloudapp.azure.com' bash /tmp/vm-setup.sh",
+      "sudo COPILOT_PAT='${var.copilot_pat}' GITHUB_AGENT_PAT='${var.github_agent_pat}' VM_FQDN='${var.dns_label}.${var.location}.cloudapp.azure.com' bash /tmp/vm-setup.sh",
     ]
   }
 }
