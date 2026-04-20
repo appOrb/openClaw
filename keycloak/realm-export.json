@@ -1,0 +1,46 @@
+{
+  "realm": "openclaw",
+  "enabled": true,
+  "displayName": "OpenClaw",
+  "displayNameHtml": "<strong>OpenClaw</strong>",
+  "sslRequired": "external",
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 30,
+  "clients": [
+    {
+      "clientId": "paperclip",
+      "name": "Paperclip Dashboard",
+      "description": "Paperclip AI Company Control Plane — protected by Keycloak OIDC",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "__PAPERCLIP_CLIENT_SECRET__",
+      "redirectUris": ["https://__VM_FQDN__/oauth2/callback"],
+      "webOrigins": ["https://__VM_FQDN__"],
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": true,
+      "attributes": {
+        "post.logout.redirect.uris": "+"
+      }
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "paperclip-user",
+        "description": "User with access to the Paperclip dashboard"
+      }
+    ]
+  },
+  "defaultRoles": ["paperclip-user"]
+}
