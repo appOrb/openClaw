@@ -19,7 +19,7 @@ sudo apt-get update -qq
 sudo apt-get install -y -qq \
   git curl wget gnupg ca-certificates \
   nginx certbot python3-certbot-nginx \
-  build-essential
+  build-essential apt-transport-https
 
 # ── Node.js 22 ────────────────────────────────────────────────────────────────
 if ! node --version 2>/dev/null | grep -q "^v22"; then
@@ -35,6 +35,44 @@ if ! command -v pnpm &>/dev/null; then
   npm install -g pnpm --quiet
 fi
 echo "    pnpm: $(pnpm --version)"
+
+# ── GitHub CLI (gh) ───────────────────────────────────────────────────────────
+if ! command -v gh &>/dev/null; then
+  echo "==> Installing GitHub CLI (gh)"
+  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
+    sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+  sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+  # Hardcode amd64 — dpkg --print-architecture unavailable on this VM image
+  echo "deb [arch=amd64 signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | \
+    sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+  sudo apt-get update -qq
+  sudo apt-get install -y -qq gh
+fi
+echo "    gh: $(gh --version | head -1)"
+
+# ── gh auth + git config ──────────────────────────────────────────────────────
+# GITHUB_AGENT_PAT = classic PAT with scopes: repo, workflow, read:org
+GITHUB_AGENT_PAT="${GITHUB_AGENT_PAT:-}"
+if [ -n "${GITHUB_AGENT_PAT}" ]; then
+  echo "==> Authenticating gh CLI and configuring git"
+  sudo -u "${DEPLOY_USER}" bash -c "
+    echo '${GITHUB_AGENT_PAT}' | gh auth login --with-token 2>&1 && \
+    gh auth setup-git 2>&1 | head -2 && \
+    git config --global user.name 'OpenClaw Agent' && \
+    git config --global user.email 'agents@openclaw.dev' && \
+    echo '    gh auth configured ✓'
+  "
+else
+  echo "    Skipping gh auth (GITHUB_AGENT_PAT not set)"
+  echo "    Run manually: bash infra/vm-auth-setup.sh"
+fi
+
+# ── Playwright MCP ────────────────────────────────────────────────────────────
+echo ""
+echo "==> Installing Playwright MCP"
+npm install -g @playwright/mcp --quiet
+sudo -u "${DEPLOY_USER}" npx playwright install --with-deps chromium 2>&1 | tail -3
+echo "    @playwright/mcp: $(npx @playwright/mcp --version 2>/dev/null || echo 'installed')"
 
 # ── OpenClaw ──────────────────────────────────────────────────────────────────
 echo ""
@@ -128,14 +166,23 @@ try:
         cfg = json.load(f)
 except (FileNotFoundError, json.JSONDecodeError):
     cfg = {}
-cfg.setdefault('models', {})
 cfg.setdefault('skills', {})
 cfg.setdefault('memory', {})
 cfg['gateway'] = {'mode': 'local', 'auth': {'mode': 'none'}}
+# Playwright MCP server for E2E testing
+cfg['mcp'] = {
+    'servers': {
+        'playwright': {
+            'command': 'npx',
+            'args': ['@playwright/mcp', '--browser', 'chromium', '--headless'],
+            'enabled': True
+        }
+    }
+}
 os.makedirs(os.path.dirname(config_path), exist_ok=True)
 with open(config_path, 'w') as f:
     json.dump(cfg, f, indent=2)
-print('openclaw config seeded with gateway.mode=local')
+print('openclaw config seeded: gateway + playwright MCP')
 PYEOF
   fi
 "
@@ -221,6 +268,14 @@ if [ -z "${COPILOT_PAT}" ]; then
   echo "      ssh azureuser@VM openclaw models auth login-github-copilot"
 else
   echo "✅ Copilot auth configured via auth-profiles.json"
+fi
+echo ""
+if [ -z "${GITHUB_AGENT_PAT}" ]; then
+  echo "⚠️  GitHub agent (gh CLI) not authenticated."
+  echo "   Run: export GITHUB_AGENT_PAT=ghp_... && bash infra/vm-auth-setup.sh"
+  echo "   Scopes needed: repo, workflow, read:org"
+else
+  echo "✅ GitHub CLI authenticated (agents can clone/push to appOrb repos)"
 fi
 echo ""
 echo "Dashboard: https://${VM_FQDN:-$(curl -s ifconfig.me)}"
