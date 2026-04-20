@@ -46,6 +46,10 @@ jobs:
       # Create at: https://github.com/settings/tokens/new?scopes=copilot (Classic token, not fine-grained)
       TF_VAR_copilot_pat: ${{ secrets.COPILOT_PAT }}
 
+      # Classic GitHub PAT for gh CLI on VM (repo + workflow + read:org) — used by agents to push PRs.
+      # Create at: https://github.com/settings/tokens/new?scopes=repo,workflow,read:org
+      TF_VAR_github_agent_pat: ${{ secrets.GITHUB_AGENT_PAT }}
+
       # In CI runners have dynamic IPs so SSH must be open to all.
       # The NSG still blocks non-SSH ports. For tighter security set this to a
       # static IP or VPN CIDR via the SSH_SOURCE_CIDR secret.

@@ -61,6 +61,13 @@ variable "copilot_pat" {
   default     = ""
 }
 
+variable "github_agent_pat" {
+  type        = string
+  description = "Classic GitHub PAT with 'repo, workflow, read:org' scopes — used by gh CLI on the VM so agents can clone/push to appOrb repos. Create at: https://github.com/settings/tokens/new?scopes=repo,workflow,read:org"
+  sensitive   = true
+  default     = ""
+}
+
 variable "ssh_source_cidr" {
   type        = string
   description = "CIDR range allowed to SSH into the VM. Restrict to your IP for better security (e.g. '1.2.3.4/32')"
