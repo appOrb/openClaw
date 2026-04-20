@@ -3,7 +3,7 @@
 #
 # Admin console (SSH tunnel required):
 #   ssh -L 8080:localhost:8080 azureuser@VM_IP
-#   Then open: http://localhost:8080/admin
+#   Then open: http://localhost:8080/auth/admin
 #
 # The realm-export.json is imported automatically on first start.
 # Secrets are loaded from the .env file written by keycloak-setup.sh.
@@ -23,13 +23,15 @@ services:
       KC_HOSTNAME_STRICT_HTTPS: "false"
       KC_HTTP_ENABLED: "true"
       KC_HEALTH_ENABLED: "true"
+      KC_PROXY: "edge"
+      KC_HTTP_RELATIVE_PATH: "/auth"
     volumes:
       - keycloak_data:/opt/keycloak/data
       - ./realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
     ports:
       - "127.0.0.1:8080:8080"
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8080/health/ready || exit 1"]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /auth/health/ready HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && grep -q '200 OK' <&3 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
