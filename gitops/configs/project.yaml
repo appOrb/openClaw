@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: openclaw
+  namespace: argocd
+spec:
+  description: OpenClaw AI Developer Platform
+  
+  sourceRepos:
+    - 'https://github.com/appOrb/openClaw.git'
+    - 'https://github.com/appOrb/*'
+  
+  destinations:
+    - namespace: 'openclaw-*'
+      server: https://kubernetes.default.svc
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+  
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  
+  roles:
+    - name: admin
+      description: Admin role for OpenClaw project
+      policies:
+        - p, proj:openclaw:admin, applications, *, openclaw/*, allow
+      groups:
+        - appOrb:admins
+    
+    - name: developer
+      description: Developer role for OpenClaw project
+      policies:
+        - p, proj:openclaw:developer, applications, get, openclaw/*, allow
+        - p, proj:openclaw:developer, applications, sync, openclaw/*, allow
+      groups:
+        - appOrb:developers
+    
+    - name: backstage
+      description: Backstage automation role
+      policies:
+        - p, proj:openclaw:backstage, applications, *, openclaw/*, allow
