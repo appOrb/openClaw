@@ -1,0 +1,25 @@
+# Azure Authentication
+# Get these from your Azure Service Principal
+subscription_id = "05a43f56-f126-4bf1-bb97-9ca4d91dfcb5"
+tenant_id       = "1b9184b9-e785-4727-a33d-f9526fe07006"
+client_id       = "f2410d10-07d1-49e2-af61-dba86cc9b441"
+client_secret   = "your-azure-client-secret-here"
+
+# Location
+location = "eastus"
+
+# VM Configuration
+admin_username = "azureuser"
+ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC... your-public-key"
+
+# OpenClaw Tokens (optional for initial deployment)
+github_token  = "your-github-token"
+copilot_token = "your-copilot-token"
+
+# Tags
+tags = {
+  Project     = "OpenClaw"
+  ManagedBy   = "Terraform"
+  Environment = "dev"
+  Owner       = "reevelobo"
+}

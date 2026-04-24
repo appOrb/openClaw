@@ -142,17 +142,21 @@ resource "azurerm_linux_virtual_machine" "openclaw" {
     environment   = var.environment
   }))
   
-  # Auto-shutdown (dev only)
-  dynamic "auto_shutdown_config" {
-    for_each = var.enable_auto_shutdown ? [1] : []
-    content {
-      enabled = true
-      timezone = "UTC"
-      notification_settings {
-        enabled = false
-      }
-      daily_recurrence_time = var.auto_shutdown_time
-    }
+  tags = var.tags
+}
+
+# Auto-shutdown schedule (dev only)
+resource "azurerm_dev_test_global_vm_shutdown_schedule" "openclaw" {
+  count              = var.enable_auto_shutdown ? 1 : 0
+  virtual_machine_id = azurerm_linux_virtual_machine.openclaw.id
+  location           = var.location
+  enabled            = true
+  
+  daily_recurrence_time = var.auto_shutdown_time
+  timezone              = "UTC"
+  
+  notification_settings {
+    enabled = false
   }
   
   tags = var.tags
