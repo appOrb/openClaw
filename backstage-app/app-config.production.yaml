@@ -1,0 +1,38 @@
+app:
+  baseUrl: https://backstage.openclaw.ai
+
+backend:
+  baseUrl: https://backstage.openclaw.ai
+  listen:
+    port: 7007
+    host: 0.0.0.0
+  
+  database:
+    client: pg
+    connection:
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+      database: backstage_catalog
+      ssl:
+        rejectUnauthorized: false
+
+  cache:
+    store: memory
+
+  cors:
+    origin: https://backstage.openclaw.ai
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+
+auth:
+  environment: production
+
+catalog:
+  locations:
+    - type: url
+      target: https://github.com/appOrb/openClaw/blob/main/backstage/catalog/components/openclaw-platform.yaml
+    
+    - type: url
+      target: https://github.com/appOrb/openClaw/blob/main/backstage/templates/openclaw-deployment/template.yaml

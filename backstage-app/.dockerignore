@@ -1,0 +1,11 @@
+.git
+.github
+.vscode
+node_modules
+.cache
+.yarn
+dist
+dist-types
+*.local
+.env*
+!.env.example

@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  backstage:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "7007:7007"
+    environment:
+      - NODE_ENV=development
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
+      - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
+      - AZURE_TENANT_ID=${AZURE_TENANT_ID}
+      - AUTH_GITHUB_CLIENT_ID=${AUTH_GITHUB_CLIENT_ID}
+      - AUTH_GITHUB_CLIENT_SECRET=${AUTH_GITHUB_CLIENT_SECRET}
+      - K8S_CLUSTER_URL=${K8S_CLUSTER_URL}
+      - K8S_SA_TOKEN=${K8S_SA_TOKEN}
+      - ARGOCD_URL=${ARGOCD_URL}
+      - ARGOCD_USERNAME=${ARGOCD_USERNAME}
+      - ARGOCD_PASSWORD=${ARGOCD_PASSWORD}
+      - OPENCLAW_DEV_URL=${OPENCLAW_DEV_URL}
+      - OPENCLAW_STAGING_URL=${OPENCLAW_STAGING_URL}
+      - OPENCLAW_PROD_URL=${OPENCLAW_PROD_URL}
+    volumes:
+      - ./app-config.yaml:/app/app-config.yaml:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7007/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
