@@ -1,259 +1,618 @@
-# OpenClaw — Azure-Hosted AI Developer Platform
+# OpenClaw Production Infrastructure
 
-> OpenClaw is an employee. Paperclip is the company.
+**Multi-platform deployment infrastructure for OpenClaw with Backstage IDP, ArgoCD GitOps, and enterprise-grade operational procedures.**
 
-This repo contains the **infrastructure code and configuration** to host:
-- **[Paperclip](https://paperclip.ing)** — AI company control plane (org chart, goals, budgets, heartbeats)
-- **[OpenClaw](https://openclaw.ai)** — 9 always-on AI agents, each with a specialized role
-
-Both run on a single Azure VM (~$36/mo) with continuous uptime.
-
-🌐 **Live at:** https://openclaw-reevelobo.eastus.cloudapp.azure.com
+[![Infrastructure](https://img.shields.io/badge/infrastructure-terraform-623CE4?logo=terraform)](https://www.terraform.io/)
+[![Platform](https://img.shields.io/badge/platform-azure-0078D4?logo=microsoft-azure)](https://azure.microsoft.com/)
+[![IDP](https://img.shields.io/badge/IDP-backstage-9BF0E1?logo=backstage)](https://backstage.io/)
+[![GitOps](https://img.shields.io/badge/GitOps-argocd-EE7B30?logo=argo)](https://argoproj.github.io/)
 
 ---
 
-## The Team
-
-| Agent | Role | Specialty |
-|---|---|---|
-| **Apex** | ceo | Chief Executive Officer |
-| **Maven** | cmo | Chief Marketing Officer |
-| **Orion** | cto | Principal Architect |
-| **Alex** | engineer | Senior Full-Stack Developer |
-| **Cipher** | devops | DevSecOps Engineer |
-| **Atlas** | devops | Platform Engineer |
-| **Forge** | devops | Infrastructure Engineer |
-| **Sentinel** | general | Security Specialist |
-| **Horizon** | researcher | Forward Engineering Agent |
-
-All agents use **GitHub Copilot** as their LLM backend with task-aware model routing:
-- **Haiku 4.5** — repetitive / monotonous tasks (boilerplate, formatting)
-- **Sonnet 4.5** — research, creative thinking, architecture decisions, default
-- **GPT-5.3-Codex** — troubleshooting, logic, debugging
-
----
-
-## Cost
-
-| Resource | Cost |
-|---|---|
-| Azure VM Standard_B2s | ~$30/mo |
-| OS Disk + Public IP | ~$6/mo |
-| GitHub Copilot sub | ~$10/mo (or $0 if existing) |
-| **Total** | **~$36–46/mo** |
-
-No per-token LLM billing — all models go through your Copilot subscription.
-
----
-
-## Repo Structure
-
-```
-openClaw/
-├── .env.example
-├── infra/
-│   ├── terraform/                  ← Terraform root module
-│   │   ├── versions.tf             ← provider requirements
-│   │   ├── main.tf                 ← wires all modules + remote-exec bootstrap
-│   │   ├── variables.tf
-│   │   ├── outputs.tf
-│   │   ├── terraform.tfvars.example
-│   │   └── modules/
-│   │       ├── resource-group/     ← Azure Resource Group
-│   │       ├── networking/         ← VNet, NSG, public IP, NIC
-│   │       └── vm/                 ← Linux VM (Ubuntu 24.04, B2s)
-│   ├── vm-setup.sh                 ← bootstrap script (run by Terraform)
-│   └── keycloak-setup.sh           ← Keycloak + oauth2-proxy setup (run by Terraform)
-├── openclaw/
-│   ├── config.json                 ← OpenClaw persona + model routing config
-│   └── skills/                     ← 7 developer skill definition files
-├── paperclip/
-│   └── company.yaml                ← Paperclip company + all 7 agent configs
-├── keycloak/
-│   ├── realm-export.json           ← Keycloak realm + Paperclip OIDC client config
-│   └── docker-compose.yml          ← Docker Compose for Keycloak (internal port 8080)
-└── nginx/
-    └── openclaw.conf               ← Nginx reverse proxy + SSL config
-```
-
----
-
-## Provision (Fresh Setup)
-
-### Prerequisites
-- [Terraform ≥ 1.5](https://developer.hashicorp.com/terraform/install)
-- Azure CLI installed and logged in: `az login`
-- SSH key pair at `~/.ssh/id_rsa` / `~/.ssh/id_rsa.pub`
-- GitHub Copilot subscription active
-
-### Step 1 — Configure
+## 🚀 Quick Start
 
 ```bash
-cd infra/terraform
-cp terraform.tfvars.example terraform.tfvars
+# Deploy development VM
+./deploy.sh dev vm apply
+
+# Check status
+./army-status.sh
+
+# Destroy when done
+./deploy.sh dev vm destroy
 ```
 
-Edit `terraform.tfvars`:
-- `dns_label` — unique DNS label (e.g. `openclaw-yourname`)
-- `github_token` — classic PAT with `repo` + `workflow` scopes
-- `copilot_pat` — classic PAT with `copilot` scope ([create here](https://github.com/settings/tokens/new?scopes=copilot))
-- `ssh_source_cidr` — restrict to your IP for security
-- `keycloak_admin_password` — strong password for Keycloak admin console (≥ 8 chars)
-- `keycloak_client_secret` — random UUID for the Paperclip OIDC client (`uuidgen`)
-- `oauth2_proxy_cookie_secret` — 32-byte base64 cookie secret (`openssl rand -base64 32 | tr -d '\n'`)
+---
 
-> ⚠️ `copilot_pat` **must be a classic PAT** (`ghp_...`), not a fine-grained token.
-> Fine-grained tokens do not support the Copilot API scope.
+## 📦 What's Included
 
-### Step 2 — Provision + Bootstrap
+### **Infrastructure-as-Code (Terraform)**
+- ✅ **5 Modules:** VM, ACI, AKS, Backup, Monitoring
+- ✅ **3 Environments:** dev, staging, production
+- ✅ **Remote State:** Azure Storage backend
+- ✅ **Multi-Platform:** Virtual Machines, Container Instances, Kubernetes
+
+### **Deployment Automation**
+- ✅ **deploy.sh** — Master deployment script
+- ✅ **deploy-army.sh** — Multi-VM deployment
+- ✅ **validate.sh** — Pre-deployment validation
+- ✅ **army-status.sh** — Health monitoring
+
+### **Developer Platform (Backstage IDP)**
+- ✅ Software Catalog
+- ✅ Deployment Templates
+- ✅ GitHub Integration
+- ✅ Azure Integration
+- ✅ TechDocs
+- ✅ Cost Insights
+
+### **GitOps (ArgoCD)**
+- ✅ Continuous Deployment
+- ✅ Multi-Environment Sync
+- ✅ Rollback Support
+- ✅ Health Monitoring
+
+### **Enterprise Documentation**
+- ✅ **Test Procedures** (10 tests, 15 KB)
+- ✅ **Deployment SOPs** (10 procedures, 21 KB)
+- ✅ **Validation Guides** (15 KB)
+- ✅ **Troubleshooting**
+
+---
+
+## 🏗️ Architecture
+
+### **Platform Options**
+
+| Platform | Use Case | Cost/Month | Setup Time |
+|----------|----------|------------|------------|
+| **VM** | Development, testing | $13.50 | 15 min |
+| **ACI** | Staging, UAT | $12.00 | 10 min |
+| **AKS** | Production | $132.00 | 30 min |
+| **Army** | Distributed workloads | $27/VM | 20 min |
+
+### **Network Architecture**
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  Azure Subscription                  │
+├─────────────────────────────────────────────────────┤
+│                                                       │
+│  ┌──────────────┐  ┌──────────────┐  ┌───────────┐ │
+│  │   Dev (VM)   │  │Staging (ACI) │  │Prod (AKS) │ │
+│  │              │  │              │  │           │ │
+│  │ B1s Instance │  │ 1 vCPU       │  │ 3 Nodes   │ │
+│  │ $13.50/mo    │  │ 1.5 GB RAM   │  │ $132/mo   │ │
+│  └──────────────┘  └──────────────┘  └───────────┘ │
+│                                                       │
+│  ┌─────────────────────────────────────────────────┐│
+│  │              OpenClaw Army (N VMs)              ││
+│  │  Shared VNet, Separate Subnets                  ││
+│  │  Load Balanced, Auto-Scaling                    ││
+│  └─────────────────────────────────────────────────┘│
+│                                                       │
+│  ┌─────────────────────────────────────────────────┐│
+│  │         Backstage IDP + ArgoCD GitOps           ││
+│  │  Developer Portal & Continuous Deployment       ││
+│  └─────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📋 Prerequisites
+
+- **Terraform** v1.14.9+ ([download](https://www.terraform.io/downloads))
+- **Azure CLI** ([install](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli))
+- **Azure Subscription** (active)
+- **Service Principal** (with Contributor role)
+- **SSH Key Pair** (~/.ssh/id_rsa)
+- **GitHub Token** (optional, for integrations)
+
+---
+
+## 🎯 Deployment Options
+
+### **Option 1: Development VM**
+
+**Cost:** $0.44/day ($13.50/month)  
+**Setup Time:** 15 minutes  
+**Use Case:** Development, testing, demos
 
 ```bash
+# Set credentials
+export ARM_CLIENT_ID="your-client-id"
+export ARM_CLIENT_SECRET="your-secret"
+export ARM_TENANT_ID="your-tenant-id"
+export ARM_SUBSCRIPTION_ID="your-subscription-id"
+
+# Validate
+./validate.sh
+
+# Deploy
+./deploy.sh dev vm apply
+
+# Get IP
+cd terraform/environments/dev
+terraform output public_ip_address
+
+# SSH
+ssh azureuser@<IP>
+
+# Destroy
+./deploy.sh dev vm destroy
+```
+
+**Follow:** [SOP-001: Development VM Deployment](DEPLOYMENT_SOPS.md#sop-001-development-vm-deployment)
+
+---
+
+### **Option 2: Staging Container (ACI)**
+
+**Cost:** $0.40/day ($12/month)  
+**Setup Time:** 10 minutes  
+**Use Case:** Staging, UAT, pre-production
+
+```bash
+# Deploy
+./deploy.sh staging aci apply
+
+# Get FQDN
+cd terraform/environments/staging
+terraform output fqdn
+
+# Test
+curl http://<FQDN>/health
+
+# Destroy
+./deploy.sh staging aci destroy
+```
+
+**Follow:** [SOP-002: Staging ACI Deployment](DEPLOYMENT_SOPS.md#sop-002-staging-aci-deployment)
+
+---
+
+### **Option 3: Production Kubernetes (AKS)**
+
+**Cost:** $4.31/day ($132/month)  
+**Setup Time:** 45 minutes  
+**Use Case:** Production workloads, high availability
+
+```bash
+# Prerequisites
+# - Change request approved
+# - UAT completed
+# - Maintenance window scheduled
+# - Backup completed
+
+# Deploy
+./deploy.sh production aks apply
+
+# Get credentials
+az aks get-credentials \
+  --resource-group openclaw-production-rg \
+  --name openclaw-production-aks
+
+# Verify
+kubectl get nodes
+kubectl get pods -n openclaw-production
+
+# Deploy applications (ArgoCD)
+kubectl apply -f gitops/argocd/argocd-install.yaml
+kubectl apply -f gitops/apps/openclaw.yaml
+
+# Monitor
+argocd app get openclaw-production
+
+# Rollback (if needed)
+argocd app rollback openclaw-production
+```
+
+**Follow:** [SOP-003: Production AKS Deployment](DEPLOYMENT_SOPS.md#sop-003-production-aks-deployment)
+
+---
+
+### **Option 4: Multi-VM Army**
+
+**Cost:** $0.88/day per VM  
+**Setup Time:** 20 minutes  
+**Use Case:** Distributed workloads, multiple agents
+
+```bash
+# Deploy N VMs (e.g., 5)
+./deploy-army.sh 5
+
+# Check status
+./army-status.sh
+
+# SSH to VMs
+cd army-deployment
+terraform output ssh_commands
+
+# Test connectivity
+for IP in $(terraform output -json vm_ips | python3 -c "import sys,json; print(' '.join(json.load(sys.stdin).values()))"); do
+  echo "Testing $IP..."
+  ssh azureuser@$IP "hostname && openclaw status"
+done
+
+# Destroy
+./destroy-army.sh
+```
+
+**Follow:** [SOP-004: Multi-VM Army Deployment](DEPLOYMENT_SOPS.md#sop-004-multi-vm-army-deployment)
+
+---
+
+## 🏢 Backstage Developer Portal
+
+### **Installation**
+
+```bash
+cd backstage-app
+./setup.sh
+
+# Configure
+cp .env.example .env
+nano .env  # Add GITHUB_TOKEN
+
+# Start
+yarn dev
+
+# Access
+open http://localhost:3000
+```
+
+### **Features**
+- **Software Catalog** — View all OpenClaw deployments
+- **Templates** — Deploy new instances with forms
+- **TechDocs** — Integrated documentation
+- **Cost Insights** — Track Azure spending
+- **GitHub Integration** — View repos, PRs, workflows
+
+**Follow:** [SOP-005: Backstage IDP Setup](DEPLOYMENT_SOPS.md#sop-005-backstage-idp-setup)
+
+---
+
+## 📊 Testing
+
+### **Pre-Deployment Validation**
+
+```bash
+# Run all validation tests
+./validate.sh
+
+# Expected: 50+ tests passing
+```
+
+### **Infrastructure Testing**
+
+```bash
+# Test VM deployment
+# Follow: TEST-INF-001
+
+# Test Army deployment
+# Follow: TEST-INF-002
+
+# Test ACI deployment
+# Follow: TEST-INF-003
+```
+
+### **Integration Testing**
+
+```bash
+# End-to-end test
+# Follow: TEST-INT-001
+```
+
+**See:** [TEST_PROCEDURES.md](TEST_PROCEDURES.md) for complete test suite
+
+---
+
+## 🔄 Operations
+
+### **Monitoring**
+
+```bash
+# VM health
+ssh azureuser@<IP> "systemctl status openclaw"
+
+# Army health
+./army-status.sh
+
+# AKS health
+kubectl get pods -n openclaw-production
+```
+
+### **Scaling**
+
+```bash
+# Horizontal Pod Autoscaling (AKS)
+kubectl autoscale deployment openclaw \
+  -n openclaw-production \
+  --cpu-percent=70 \
+  --min=3 \
+  --max=10
+
+# VM resizing
+az vm resize \
+  --resource-group openclaw-dev-rg \
+  --name openclaw-dev-vm \
+  --size Standard_B4ms
+
+# Army scaling
+./deploy-army.sh 10  # Scale to 10 VMs
+```
+
+**Follow:** [SOP-007: Scaling Operations](DEPLOYMENT_SOPS.md#sop-007-scaling-operations)
+
+### **Backups**
+
+```bash
+# Manual backup
+az backup protection backup-now \
+  --resource-group openclaw-dev-rg \
+  --vault-name openclaw-backup-vault \
+  --container-name openclaw-dev-vm \
+  --item-name openclaw-dev-vm
+```
+
+**Follow:** [SOP-008: Backup Procedures](DEPLOYMENT_SOPS.md#sop-008-backup-procedures)
+
+### **Emergency Rollback**
+
+```bash
+# Rollback to previous version (5-10 minutes)
+argocd app rollback openclaw-production <REVISION>
+```
+
+**Follow:** [SOP-006: Emergency Rollback](DEPLOYMENT_SOPS.md#sop-006-emergency-rollback)
+
+---
+
+## 📚 Documentation
+
+### **For Operators**
+- [DEPLOYMENT_SOPS.md](DEPLOYMENT_SOPS.md) — 10 standard operating procedures
+- [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) — Complete deployment guide
+- [VALIDATION_GUIDE.md](VALIDATION_GUIDE.md) — Step-by-step validation
+- [QUICK_VALIDATION.md](QUICK_VALIDATION.md) — Rapid checklist
+
+### **For Testers**
+- [TEST_PROCEDURES.md](TEST_PROCEDURES.md) — 10 comprehensive test procedures
+
+### **For Developers**
+- [backstage-app/README.md](backstage-app/README.md) — Backstage setup
+- [terraform/README.md](terraform/README.md) — Terraform modules
+
+### **For Army Deployments**
+- [ARMY_CONFIG.md](ARMY_CONFIG.md) — Multi-VM configuration
+
+---
+
+## 🔧 Troubleshooting
+
+### **Validation Fails**
+
+```bash
+# Check Terraform version
+terraform version  # Expected: v1.14.9+
+
+# Check Azure login
+az account show
+
+# Check SSH key
+ls -la ~/.ssh/id_rsa.pub
+```
+
+### **Deployment Fails**
+
+```bash
+# Check logs
+cd terraform/environments/dev
+terraform show
+
+# Re-run with debug
+TF_LOG=DEBUG terraform apply
+```
+
+### **Service Not Starting**
+
+```bash
+# Check service status
+ssh azureuser@<IP> "systemctl status openclaw"
+
+# Check logs
+ssh azureuser@<IP> "journalctl -u openclaw -f"
+```
+
+### **Need Help?**
+
+1. Check [VALIDATION_GUIDE.md](VALIDATION_GUIDE.md)
+2. Review [DEPLOYMENT_SOPS.md](DEPLOYMENT_SOPS.md)
+3. See [TEST_PROCEDURES.md](TEST_PROCEDURES.md)
+4. Open GitHub Issue
+
+---
+
+## 💰 Cost Breakdown
+
+### **Development**
+- VM (B1s): $13.50/month
+- Storage: $2.00/month
+- Network: $1.00/month
+- **Total:** $16.50/month
+
+### **Staging**
+- ACI (1 vCPU, 1.5 GB): $12.00/month
+- **Total:** $12.00/month
+
+### **Production**
+- AKS (3 nodes): $132.00/month
+- Load Balancer: $10.00/month
+- Monitoring: $10.00/month
+- Backup: $5.00/month
+- **Total:** $157.00/month
+
+### **Army (per VM)**
+- VM (B2s): $27.00/month
+- **5 VMs:** $135.00/month
+- **10 VMs:** $270.00/month
+
+### **Total (All Environments)**
+- Dev + Staging + Production: $185.50/month
+- With 5-VM Army: $320.50/month
+
+---
+
+## 🎉 Features
+
+### **Infrastructure**
+- ✅ Multi-platform support (VM, ACI, AKS)
+- ✅ Multi-environment (dev, staging, production)
+- ✅ Remote state management
+- ✅ Automated backups
+- ✅ Monitoring & alerting
+- ✅ Cost optimization
+- ✅ Security hardening
+
+### **Platform**
+- ✅ Backstage Developer Portal
+- ✅ ArgoCD GitOps
+- ✅ Software Catalog
+- ✅ Deployment Templates
+- ✅ TechDocs
+- ✅ Cost Insights
+
+### **Operations**
+- ✅ 10 Standard Operating Procedures
+- ✅ 10 Test Procedures
+- ✅ Validation Scripts
+- ✅ Health Monitoring
+- ✅ Emergency Rollback
+- ✅ Change Management
+
+### **Deployment**
+- ✅ One-command deployment
+- ✅ Automated validation
+- ✅ Progress monitoring
+- ✅ Cost estimates
+- ✅ Safety confirmations
+
+---
+
+## 🚀 Quick Reference
+
+### **Common Commands**
+
+```bash
+# Validate everything
+./validate.sh
+
+# Deploy dev VM
+./deploy.sh dev vm apply
+
+# Deploy 5-VM army
+./deploy-army.sh 5
+
+# Check army status
+./army-status.sh
+
+# Destroy dev VM
+./deploy.sh dev vm destroy
+
+# Destroy army
+./destroy-army.sh
+
+# Start Backstage
+cd backstage-app && yarn dev
+```
+
+### **Terraform Commands**
+
+```bash
+# Initialize
+cd terraform/environments/dev
 terraform init
-terraform plan -out=openclaw.tfplan
-terraform apply openclaw.tfplan
-```
 
-`terraform apply` does everything in order:
-1. Creates resource group, VNet, NSG, static IP, NIC, and VM
-2. SSHes into the VM and runs `vm-setup.sh`:
-   - Installs Node 22, pnpm, Nginx, certbot
-   - Installs Paperclip + OpenClaw as systemd daemons
-   - Writes `auth-profiles.json` from `copilot_pat` (if set)
-   - Configures OpenClaw model routing
-   - Runs certbot to get Let's Encrypt SSL
-3. Deploys `openclaw/config.json` + all skills
-4. Deploys `paperclip/company.yaml`
-5. **Deploys Keycloak + oauth2-proxy** (`keycloak-setup.sh`):
-   - Installs Docker Engine
-   - Starts Keycloak 24 in Docker (port 8080, internal only) with the `openclaw` realm
-   - Installs and configures `oauth2-proxy` as an authentication gateway (port 4180)
-6. Deploys `nginx/openclaw.conf` — now routes Paperclip through oauth2-proxy
+# Plan
+terraform plan
 
-### Step 3 — (If copilot_pat was not set) Authenticate manually
+# Apply
+terraform apply
 
-If you didn't set `copilot_pat` in tfvars, authenticate interactively:
+# Show
+terraform show
 
-```bash
-ssh azureuser@$(terraform output -raw public_ip_address)
-openclaw models auth login-github-copilot
-# Opens a device-flow URL — visit it, enter the code, approve
-```
+# Outputs
+terraform output
 
-### Step 4 — Validate
-
-Open the Paperclip dashboard at `https://<your-fqdn>`, assign a task to any agent,
-and watch the agent execute: e.g. *"Scaffold a FastAPI todo app with PostgreSQL"*.
-
----
-
-## Login Security (Keycloak + oauth2-proxy)
-
-The Paperclip dashboard is protected by [Keycloak](https://www.keycloak.org/) — an enterprise-grade Identity Provider — via [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/).
-
-### Architecture
-
-```
-Browser
-  │  HTTPS (443)
-  ▼
-Nginx
-  │  HTTP (4180) — all traffic, including /oauth2/* OIDC callbacks
-  ▼
-oauth2-proxy ── unauthenticated? ──► Keycloak login (redirect)
-  │  authenticated
-  │  HTTP (3100)
-  ▼
-Paperclip
-```
-
-- **Keycloak** runs in Docker on port `8080` (internal only — not exposed externally).
-- **oauth2-proxy** runs as a systemd service on port `4180`.
-- Keycloak admin console is accessible only via an SSH tunnel to prevent external exposure.
-
-### Accessing the Keycloak Admin Console
-
-```bash
-ssh -L 8080:localhost:8080 azureuser@$(terraform output -raw public_ip_address)
-# Then open: http://localhost:8080/admin  (admin / your keycloak_admin_password)
-```
-
-### Creating Users
-
-In the Keycloak admin console:
-1. Select realm **openclaw**
-2. Go to **Users → Add user**
-3. Set a **Credentials** password
-
-### After Enabling SSL (certbot)
-
-Update `cookie-secure` in `/etc/oauth2-proxy.cfg` on the VM:
-```bash
-sudo sed -i 's/cookie-secure = false/cookie-secure = true/' /etc/oauth2-proxy.cfg
-sudo systemctl restart oauth2-proxy
-```
-
-### Required Terraform Variables
-
-| Variable | Description | How to generate |
-|---|---|---|
-| `keycloak_admin_password` | Keycloak admin password (≥8 chars) | Choose a strong password |
-| `keycloak_client_secret` | OIDC client secret for Paperclip | `uuidgen` |
-| `oauth2_proxy_cookie_secret` | oauth2-proxy cookie encryption key | `openssl rand -base64 32` |
-
-These are marked `sensitive = true` in Terraform — never written to state or logs.
-
----
-
-## GitHub Actions CI/CD
-
-The `.github/workflows/deploy.yml` pipeline runs `terraform plan` on every PR and
-`terraform apply` on every push to `main`. Required repository secrets:
-
-| Secret | Description |
-|---|---|
-| `ARM_CLIENT_ID` | Azure service principal client ID |
-| `ARM_CLIENT_SECRET` | Azure service principal secret |
-| `ARM_SUBSCRIPTION_ID` | Azure subscription ID |
-| `ARM_TENANT_ID` | Azure tenant ID |
-| `OPENCLAW_GITHUB_TOKEN` | Classic PAT (`repo` + `workflow` scopes) |
-| `COPILOT_PAT` | Classic PAT with `copilot` scope |
-| `SSH_PRIVATE_KEY` | Private key for VM SSH access |
-| `SSH_PUBLIC_KEY` | Corresponding public key |
-| `TF_VAR_keycloak_admin_password` | Keycloak admin password |
-| `TF_VAR_keycloak_client_secret` | Paperclip OIDC client secret |
-| `TF_VAR_oauth2_proxy_cookie_secret` | oauth2-proxy cookie encryption key |
-
----
-
-## Decommission
-
-```bash
-cd infra/terraform
+# Destroy
 terraform destroy
 ```
 
-Destroys all Azure resources in the correct dependency order.
+### **kubectl Commands**
+
+```bash
+# Get nodes
+kubectl get nodes
+
+# Get pods
+kubectl get pods -n openclaw-production
+
+# Logs
+kubectl logs -n openclaw-production -l app=openclaw
+
+# Scale
+kubectl scale deployment openclaw -n openclaw-production --replicas=5
+```
+
+### **ArgoCD Commands**
+
+```bash
+# Get apps
+argocd app list
+
+# Sync
+argocd app sync openclaw-production
+
+# Rollback
+argocd app rollback openclaw-production
+
+# History
+argocd app history openclaw-production
+```
 
 ---
 
-## Update Agents / Software
+## 📞 Support
 
-```bash
-# Update OpenClaw
-ssh azureuser@$(terraform output -raw public_ip_address) \
-  'npm install -g openclaw@latest && sudo systemctl restart openclaw'
+### **Documentation**
+- Complete guides in this repository
+- Step-by-step procedures
+- Troubleshooting sections
 
-# Update Paperclip
-ssh azureuser@$(terraform output -raw public_ip_address) \
-  'cd ~/paperclip && git pull && pnpm install && pnpm build && sudo systemctl restart paperclip'
-```
+### **Issues**
+- GitHub Issues for bugs
+- Discussions for questions
+- PRs welcome
 
-## Re-deploy Config Changes
+---
 
-Terraform detects changes to config files via SHA-256 triggers. To push updates:
+## 📜 License
 
-```bash
-# Edit any config file, then:
-cd infra/terraform
-terraform apply
-```
+MIT License - see [LICENSE](LICENSE) file
+
+---
+
+## 🙏 Acknowledgments
+
+Built with:
+- [Terraform](https://www.terraform.io/) — Infrastructure as Code
+- [Azure](https://azure.microsoft.com/) — Cloud Platform
+- [Backstage](https://backstage.io/) — Developer Portal
+- [ArgoCD](https://argoproj.github.io/) — GitOps
+- [OpenClaw](https://openclaw.ai/) — AI Agent Platform
+
+---
+
+**Production-ready infrastructure for OpenClaw deployments.** 🚀
