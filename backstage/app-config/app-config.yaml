@@ -1,0 +1,156 @@
+app:
+  title: OpenClaw Platform
+  baseUrl: http://localhost:3000
+
+organization:
+  name: AppOrb
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  
+  database:
+    client: pg
+    connection:
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+      database: backstage_plugin_catalog
+
+integrations:
+  github:
+    - host: github.com
+      token: ${GITHUB_TOKEN}
+  
+  azure:
+    - host: portal.azure.com
+      credentials:
+        - clientId: ${AZURE_CLIENT_ID}
+          clientSecret: ${AZURE_CLIENT_SECRET}
+          tenantId: ${AZURE_TENANT_ID}
+
+proxy:
+  '/azure-api':
+    target: 'https://management.azure.com'
+    headers:
+      Authorization: 'Bearer ${AZURE_TOKEN}'
+
+techdocs:
+  builder: 'local'
+  generator:
+    runIn: 'local'
+  publisher:
+    type: 'local'
+
+auth:
+  environment: development
+  providers:
+    github:
+      development:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+    
+    microsoft:
+      development:
+        clientId: ${AZURE_CLIENT_ID}
+        clientSecret: ${AZURE_CLIENT_SECRET}
+        tenantId: ${AZURE_TENANT_ID}
+
+scaffolder:
+  defaultAuthor:
+    name: OpenClaw Bot
+    email: bot@openclaw.ai
+  defaultCommitMessage: 'Initial commit from OpenClaw Platform'
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location, Template]
+  locations:
+    # OpenClaw components
+    - type: file
+      target: ./catalog/components/**/*.yaml
+    
+    # OpenClaw templates
+    - type: file
+      target: ./templates/**/*.yaml
+    
+    # GitHub organization discovery
+    - type: github-discovery
+      target: https://github.com/appOrb
+    
+    # Azure resources discovery
+    - type: azure-discovery
+      target: subscriptions/${AZURE_SUBSCRIPTION_ID}
+
+kubernetes:
+  serviceLocatorMethod:
+    type: 'multiTenant'
+  clusterLocatorMethods:
+    - type: 'config'
+      clusters:
+        - url: ${K8S_CLUSTER_URL}
+          name: openclaw-aks
+          authProvider: 'serviceAccount'
+          skipTLSVerify: false
+          serviceAccountToken: ${K8S_SA_TOKEN}
+
+azureDevOps:
+  host: dev.azure.com
+  token: ${AZURE_DEVOPS_TOKEN}
+  organization: appOrb
+
+costInsights:
+  engineerCost: 200000
+  products:
+    computeEngine:
+      name: Compute Engine
+      icon: compute
+    cloudDataflow:
+      name: Cloud Dataflow
+      icon: data
+    cloudStorage:
+      name: Cloud Storage
+      icon: storage
+    bigQuery:
+      name: BigQuery
+      icon: search
+
+openclaw:
+  # Custom OpenClaw configuration
+  deployments:
+    - name: openclaw-dev
+      platform: vm
+      region: eastus
+      url: ${OPENCLAW_DEV_URL}
+    - name: openclaw-staging
+      platform: aci
+      region: eastus
+      url: ${OPENCLAW_STAGING_URL}
+    - name: openclaw-production
+      platform: aks
+      region: eastus
+      url: ${OPENCLAW_PROD_URL}
+  
+  agents:
+    count: 9
+    roles:
+      - ceo
+      - cmo
+      - cto
+      - engineer
+      - devops
+      - platform
+      - infrastructure
+      - security
+      - researcher

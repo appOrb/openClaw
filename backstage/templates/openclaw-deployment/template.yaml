@@ -1,0 +1,201 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: openclaw-deployment
+  title: Deploy New OpenClaw Instance
+  description: Deploy a new OpenClaw instance on Azure (VM, ACI, or AKS)
+  tags:
+    - openclaw
+    - azure
+    - deployment
+spec:
+  owner: platform-team
+  type: infrastructure
+  
+  parameters:
+    - title: Deployment Configuration
+      required:
+        - name
+        - environment
+        - platform
+      properties:
+        name:
+          title: Instance Name
+          type: string
+          description: Unique name for this OpenClaw instance
+          pattern: '^[a-z0-9-]+$'
+          ui:autofocus: true
+        
+        environment:
+          title: Environment
+          type: string
+          description: Deployment environment
+          enum:
+            - dev
+            - staging
+            - production
+          enumNames:
+            - 'Development'
+            - 'Staging'
+            - 'Production'
+        
+        platform:
+          title: Platform
+          type: string
+          description: Deployment platform
+          enum:
+            - vm
+            - aci
+            - aks
+          enumNames:
+            - 'Azure VM (Single instance)'
+            - 'Azure Container Instances (Serverless)'
+            - 'Azure Kubernetes Service (Scalable)'
+        
+        region:
+          title: Azure Region
+          type: string
+          description: Azure region for deployment
+          default: eastus
+          enum:
+            - eastus
+            - eastus2
+            - westus
+            - westus2
+            - centralus
+            - northeurope
+            - westeurope
+          enumNames:
+            - 'East US'
+            - 'East US 2'
+            - 'West US'
+            - 'West US 2'
+            - 'Central US'
+            - 'North Europe'
+            - 'West Europe'
+    
+    - title: OpenClaw Configuration
+      required:
+        - agentsCount
+      properties:
+        agentsCount:
+          title: Number of Agents
+          type: integer
+          description: Number of AI agents to deploy
+          default: 9
+          minimum: 1
+          maximum: 20
+        
+        vmSize:
+          title: VM Size (VM platform only)
+          type: string
+          description: Azure VM SKU
+          default: Standard_B2s
+          enum:
+            - Standard_B1s
+            - Standard_B2s
+            - Standard_B4ms
+            - Standard_D2s_v3
+            - Standard_D4s_v3
+        
+        enableBackup:
+          title: Enable Automated Backup
+          type: boolean
+          description: Enable automated backups
+          default: true
+        
+        enableMonitoring:
+          title: Enable Monitoring
+          type: boolean
+          description: Enable Application Insights monitoring
+          default: true
+    
+    - title: Repository
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+            allowedOwners:
+              - appOrb
+  
+  steps:
+    - id: fetch-base
+      name: Fetch Base Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{ parameters.name }}
+          environment: ${{ parameters.environment }}
+          platform: ${{ parameters.platform }}
+          region: ${{ parameters.region }}
+          agentsCount: ${{ parameters.agentsCount }}
+          vmSize: ${{ parameters.vmSize }}
+          enableBackup: ${{ parameters.enableBackup }}
+          enableMonitoring: ${{ parameters.enableMonitoring }}
+    
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: OpenClaw deployment for ${{ parameters.name }}
+        repoUrl: ${{ parameters.repoUrl }}
+        defaultBranch: main
+        repoVisibility: private
+    
+    - id: create-pr
+      name: Create Pull Request
+      action: publish:github:pull-request
+      input:
+        repoUrl: github.com?repo=openClaw&owner=appOrb
+        branchName: deploy/${{ parameters.name }}
+        title: 'Deploy OpenClaw: ${{ parameters.name }}'
+        description: |
+          ## OpenClaw Deployment
+          
+          **Instance:** ${{ parameters.name }}
+          **Environment:** ${{ parameters.environment }}
+          **Platform:** ${{ parameters.platform }}
+          **Region:** ${{ parameters.region }}
+          **Agents:** ${{ parameters.agentsCount }}
+          
+          This PR was automatically created by Backstage.
+    
+    - id: terraform-init
+      name: Initialize Terraform
+      action: azure:terraform:init
+      input:
+        workingDirectory: terraform/environments/${{ parameters.environment }}
+    
+    - id: terraform-plan
+      name: Terraform Plan
+      action: azure:terraform:plan
+      input:
+        workingDirectory: terraform/environments/${{ parameters.environment }}
+        target: module.openclaw_${{ parameters.platform }}
+    
+    - id: register
+      name: Register Component
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
+  
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Pull Request
+        url: ${{ steps.create-pr.output.remoteUrl }}
+      - title: View in Catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
+      - title: Terraform Plan
+        url: ${{ steps.terraform-plan.output.planUrl }}

@@ -1,0 +1,149 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: openclaw
+  description: OpenClaw AI Developer Platform
+  tags:
+    - ai
+    - developer-platform
+    - multi-agent
+  annotations:
+    github.com/project-slug: appOrb/openClaw
+    azure.com/subscription-id: 05a43f56-f126-4bf1-bb97-9ca4d91dfcb5
+    backstage.io/techdocs-ref: dir:.
+  links:
+    - url: https://openclaw.ai
+      title: Production
+      icon: dashboard
+    - url: https://github.com/appOrb/openClaw
+      title: GitHub Repository
+      icon: github
+    - url: https://portal.azure.com
+      title: Azure Portal
+      icon: cloud
+spec:
+  owner: platform-team
+  domain: ai-platform
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: openclaw-vm
+  description: OpenClaw VM Deployment Module
+  tags:
+    - terraform
+    - azure
+    - vm
+  annotations:
+    github.com/project-slug: appOrb/openClaw
+    backstage.io/techdocs-ref: dir:./terraform/modules/openclaw-vm
+spec:
+  type: infrastructure
+  lifecycle: production
+  owner: platform-team
+  system: openclaw
+  dependsOn:
+    - resource:azure-vm
+    - resource:azure-networking
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: openclaw-aci
+  description: OpenClaw Container Instances Module
+  tags:
+    - terraform
+    - azure
+    - containers
+  annotations:
+    github.com/project-slug: appOrb/openClaw
+spec:
+  type: infrastructure
+  lifecycle: production
+  owner: platform-team
+  system: openclaw
+  dependsOn:
+    - resource:azure-aci
+    - resource:azure-storage
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: openclaw-aks
+  description: OpenClaw Kubernetes Deployment
+  tags:
+    - terraform
+    - azure
+    - kubernetes
+  annotations:
+    github.com/project-slug: appOrb/openClaw
+    kubernetes.io/cluster: openclaw-aks
+spec:
+  type: infrastructure
+  lifecycle: production
+  owner: platform-team
+  system: openclaw
+  dependsOn:
+    - resource:azure-aks
+    - resource:azure-acr
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: openclaw-backup
+  description: Automated Backup & Recovery
+  tags:
+    - terraform
+    - backup
+    - disaster-recovery
+spec:
+  type: infrastructure
+  lifecycle: production
+  owner: platform-team
+  system: openclaw
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: openclaw-monitoring
+  description: Monitoring & Alerting
+  tags:
+    - observability
+    - monitoring
+    - azure-monitor
+spec:
+  type: infrastructure
+  lifecycle: production
+  owner: platform-team
+  system: openclaw
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: openclaw-tfstate
+  description: Terraform Remote State Storage
+  tags:
+    - terraform
+    - state
+    - azure-storage
+spec:
+  type: storage
+  owner: platform-team
+  system: openclaw
+  dependsOn: []
+---
+apiVersion: backstage.io/v1alpha1
+kind: API
+metadata:
+  name: openclaw-api
+  description: OpenClaw Platform API
+  tags:
+    - rest-api
+    - openapi
+spec:
+  type: openapi
+  lifecycle: production
+  owner: platform-team
+  system: openclaw
+  definition:
+    $text: https://openclaw.ai/api/openapi.json
