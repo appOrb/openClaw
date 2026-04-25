@@ -1,69 +1,65 @@
 #!/bin/bash
-# Agent Spawn Wrapper - Routes Discord messages to agent sessions
+# Agent Spawn - Creates OpenClaw session for a specific agent
 
-ROUTER_PATH="/home/azureuser/projects/appOrb/openClaw/openclaw/agent-router.js"
 PERSONAS_PATH="/home/azureuser/projects/appOrb/openClaw/openclaw/config/agent-personas.json"
 
 # Parse arguments
-MESSAGE="$1"
-CHANNEL="$2"
-SENDER_ID="${3:-unknown}"
-MESSAGE_ID="${4:-unknown}"
+AGENT_ID="$1"
+MESSAGE="$2"
+CHANNEL="$3"
+SENDER_ID="${4:-unknown}"
+MESSAGE_ID="${5:-unknown}"
 
-if [ -z "$MESSAGE" ] || [ -z "$CHANNEL" ]; then
-  echo "Usage: $0 <message> <channel> [sender_id] [message_id]"
+if [ -z "$AGENT_ID" ] || [ -z "$MESSAGE" ] || [ -z "$CHANNEL" ]; then
+  echo "Usage: $0 <agent_id> <message> <channel> [sender_id] [message_id]"
   exit 1
 fi
 
-# Route message to determine which agents to spawn
-AGENTS_TO_SPAWN=$(node "$ROUTER_PATH" route "$MESSAGE" "$CHANNEL" "$SENDER_ID")
+# Load agent persona
+AGENT_DATA=$(jq -r ".personas[\"$AGENT_ID\"]" "$PERSONAS_PATH")
 
-if [ "$AGENTS_TO_SPAWN" == "[]" ]; then
-  echo "No agents matched for routing"
-  exit 0
+if [ -z "$AGENT_DATA" ] || [ "$AGENT_DATA" == "null" ]; then
+  echo "Error: Agent $AGENT_ID not found in personas"
+  exit 1
 fi
 
-# Parse JSON and spawn each agent
-echo "$AGENTS_TO_SPAWN" | jq -c '.[]' | while read -r agent; do
-  AGENT_ID=$(echo "$agent" | jq -r '.agentId')
-  WORKSPACE=$(echo "$agent" | jq -r '.workspace')
-  PRIORITY=$(echo "$agent" | jq -r '.priority')
-  TRIGGER=$(echo "$agent" | jq -r '.context.trigger')
-  
-  echo "Spawning agent: $AGENT_ID (priority: $PRIORITY, trigger: $TRIGGER)"
-  
-  # Build agent task
-  TASK="You are responding to a message in Discord channel #${CHANNEL}.
+# Extract agent details
+AGENT_NAME=$(echo "$AGENT_DATA" | jq -r '.name')
+AGENT_EMOJI=$(echo "$AGENT_DATA" | jq -r '.avatar_emoji')
+WORKSPACE="/home/azureuser/projects/appOrb/openClaw/openclaw/agents/${AGENT_ID}"
 
-**Message:** $MESSAGE
-**Sender:** $SENDER_ID
-**Trigger:** $TRIGGER
+# Build agent task with full context
+TASK="**Discord Message Route:**
+Channel: #${CHANNEL}
+Message: ${MESSAGE}
+Sender: ${SENDER_ID}
+Message ID: ${MESSAGE_ID}
 
-**Your Role:** $(echo "$agent" | jq -r '.displayInfo.username')
+**Your Identity:** ${AGENT_NAME} ${AGENT_EMOJI}
 
-**Context from OPERATIONS.md:**
-- You have access to complete operational knowledge
-- Respond as your persona (see IDENTITY.md in your workspace)
-- Keep responses focused and actionable
-- Use your emoji signature when appropriate
-- Post updates to appropriate channels
+**Task:**
+You were mentioned in the message above. Respond as your character:
+1. Read your workspace IDENTITY.md for your role and capabilities
+2. Read OPERATIONS.md for current system context
+3. Provide a focused, helpful response in your voice
+4. If actions needed, outline next steps
+5. Tag other agents if coordination required
 
-**Instructions:**
-1. Analyze the message in context of your role
-2. Provide a helpful, focused response
-3. If action required, create a plan
-4. If coordinating with other agents, tag them appropriately
+Respond now as ${AGENT_NAME}."
 
-Respond naturally as your character would."
+echo "✓ Agent session prepared: $AGENT_ID"
+echo "Workspace: $WORKSPACE"
+echo "Task length: $(echo "$TASK" | wc -c) bytes"
 
-  # Spawn agent session (this would integrate with OpenClaw's sessions_spawn)
-  echo "Agent task prepared for $AGENT_ID"
-  echo "Task: $TASK"
-  echo "Workspace: $WORKSPACE"
-  echo "---"
-  
-  # Note: Actual spawning would use OpenClaw's sessions_spawn tool
-  # Example: openclaw sessions_spawn --task "$TASK" --workspace "$WORKSPACE" --label "$AGENT_ID-$MESSAGE_ID"
-done
-
-echo "Agent routing complete"
+# Output task for parent process to handle
+cat <<EOF
+{
+  "agentId": "$AGENT_ID",
+  "name": "$AGENT_NAME",
+  "emoji": "$AGENT_EMOJI",
+  "workspace": "$WORKSPACE",
+  "task": $(echo "$TASK" | jq -Rs .),
+  "messageId": "$MESSAGE_ID",
+  "channel": "$CHANNEL"
+}
+EOF

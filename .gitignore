@@ -22,3 +22,14 @@ terraform/**/terraform.tfvars
 terraform/**/*.tfplan
 army-deployment/
 .azure-credentials
+
+# Bot tokens (NEVER commit these)
+openclaw/config/bot-tokens.json
+openclaw/config/bot-deployment.json
+
+# Logs
+logs/
+*.log
+
+# Runtime
+openclaw/agents/*/.openclaw/
