@@ -1,0 +1,498 @@
+{
+  "version": "1.0",
+  "personas": {
+    "diana-ceo": {
+      "name": "Diana (CEO)",
+      "discord_handle": "diana-ceo",
+      "avatar_emoji": "👔",
+      "color": "#8B4513",
+      "channels": [
+        "executive-suite",
+        "board-room",
+        "company-announcements",
+        "owner-dashboard"
+      ],
+      "triggers": [
+        "strategic",
+        "ceo",
+        "diana",
+        "company-direction",
+        "board"
+      ],
+      "auto_respond": true,
+      "priority": "critical"
+    },
+    "marcus-cto": {
+      "name": "Marcus (CTO)",
+      "discord_handle": "marcus-cto",
+      "avatar_emoji": "⚙️",
+      "color": "#4169E1",
+      "channels": [
+        "executive-suite",
+        "engineering-all",
+        "architecture",
+        "owner-dashboard"
+      ],
+      "triggers": [
+        "technical",
+        "cto",
+        "marcus",
+        "architecture",
+        "engineering"
+      ],
+      "auto_respond": true,
+      "priority": "high"
+    },
+    "priya-cfo": {
+      "name": "Priya (CFO)",
+      "discord_handle": "priya-cfo",
+      "avatar_emoji": "💰",
+      "color": "#228B22",
+      "channels": [
+        "executive-suite",
+        "board-room",
+        "financial-ops",
+        "owner-dashboard"
+      ],
+      "triggers": [
+        "financial",
+        "cfo",
+        "priya",
+        "budget",
+        "finance"
+      ],
+      "auto_respond": true,
+      "priority": "high"
+    },
+    "leo-cmo": {
+      "name": "Leo (CMO)",
+      "discord_handle": "leo-cmo",
+      "avatar_emoji": "📢",
+      "color": "#FF4500",
+      "channels": [
+        "executive-suite",
+        "marketing-sales",
+        "product-strategy",
+        "owner-dashboard"
+      ],
+      "triggers": [
+        "marketing",
+        "cmo",
+        "leo",
+        "sales",
+        "growth"
+      ],
+      "auto_respond": true,
+      "priority": "high"
+    },
+    "alex-developer": {
+      "name": "Alex (Developer)",
+      "discord_handle": "alex-developer",
+      "avatar_emoji": "💻",
+      "color": "#6A5ACD",
+      "channels": [
+        "dev-team",
+        "engineering-all",
+        "deployments",
+        "architecture"
+      ],
+      "triggers": [
+        "bug",
+        "feature",
+        "code",
+        "alex",
+        "developer",
+        "implement"
+      ],
+      "auto_respond": true,
+      "priority": "high"
+    },
+    "morgan-architect": {
+      "name": "Morgan (Architect)",
+      "discord_handle": "morgan-architect",
+      "avatar_emoji": "🏗️",
+      "color": "#8B008B",
+      "channels": [
+        "architecture",
+        "engineering-all",
+        "dev-team"
+      ],
+      "triggers": [
+        "architecture",
+        "design",
+        "morgan",
+        "adr",
+        "system-design"
+      ],
+      "auto_respond": false,
+      "priority": "high"
+    },
+    "sam-devsecops": {
+      "name": "Sam (DevSecOps)",
+      "discord_handle": "sam-devsecops",
+      "avatar_emoji": "🔧",
+      "color": "#FF6347",
+      "channels": [
+        "deployments",
+        "engineering-all",
+        "security",
+        "dev-team"
+      ],
+      "triggers": [
+        "pipeline",
+        "deployment",
+        "sam",
+        "ci-cd",
+        "github-actions"
+      ],
+      "auto_respond": true,
+      "priority": "high"
+    },
+    "jordan-platform": {
+      "name": "Jordan (Platform)",
+      "discord_handle": "jordan-platform",
+      "avatar_emoji": "🛠️",
+      "color": "#20B2AA",
+      "channels": [
+        "engineering-all",
+        "dev-team",
+        "deployments"
+      ],
+      "triggers": [
+        "platform",
+        "tooling",
+        "jordan",
+        "developer-experience"
+      ],
+      "auto_respond": false,
+      "priority": "medium"
+    },
+    "sage-infrastructure": {
+      "name": "Sage (Infrastructure)",
+      "discord_handle": "sage-infrastructure",
+      "avatar_emoji": "☁️",
+      "color": "#4682B4",
+      "channels": [
+        "engineering-all",
+        "deployments",
+        "security"
+      ],
+      "triggers": [
+        "infrastructure",
+        "terraform",
+        "sage",
+        "azure",
+        "cloud"
+      ],
+      "auto_respond": false,
+      "priority": "medium"
+    },
+    "blake-security": {
+      "name": "Blake (Security)",
+      "discord_handle": "blake-security",
+      "avatar_emoji": "🔒",
+      "color": "#DC143C",
+      "channels": [
+        "security",
+        "incidents-escalations",
+        "engineering-all"
+      ],
+      "triggers": [
+        "security",
+        "vulnerability",
+        "blake",
+        "incident",
+        "breach"
+      ],
+      "auto_respond": true,
+      "priority": "critical"
+    },
+    "quinn-forward-eng": {
+      "name": "Quinn (Forward Eng)",
+      "discord_handle": "quinn-forward-eng",
+      "avatar_emoji": "🔬",
+      "color": "#9370DB",
+      "channels": [
+        "engineering-all",
+        "architecture"
+      ],
+      "triggers": [
+        "research",
+        "innovation",
+        "quinn",
+        "prototype",
+        "poc"
+      ],
+      "auto_respond": false,
+      "priority": "low"
+    },
+    "vp-engineering": {
+      "name": "VP Engineering",
+      "discord_handle": "vp-engineering",
+      "avatar_emoji": "👨‍💼",
+      "color": "#483D8B",
+      "channels": [
+        "engineering-all",
+        "dev-team",
+        "executive-suite"
+      ],
+      "triggers": [
+        "vp-engineering",
+        "team-planning",
+        "capacity"
+      ],
+      "auto_respond": false,
+      "priority": "high"
+    },
+    "vp-product": {
+      "name": "VP Product",
+      "discord_handle": "vp-product",
+      "avatar_emoji": "📋",
+      "color": "#FF8C00",
+      "channels": [
+        "product-strategy",
+        "engineering-all",
+        "executive-suite"
+      ],
+      "triggers": [
+        "vp-product",
+        "roadmap",
+        "feature-priority"
+      ],
+      "auto_respond": false,
+      "priority": "high"
+    },
+    "vp-growth": {
+      "name": "VP Growth",
+      "discord_handle": "vp-growth",
+      "avatar_emoji": "📈",
+      "color": "#32CD32",
+      "channels": [
+        "marketing-sales",
+        "product-strategy",
+        "executive-suite"
+      ],
+      "triggers": [
+        "vp-growth",
+        "lead-gen",
+        "conversion"
+      ],
+      "auto_respond": false,
+      "priority": "high"
+    },
+    "vp-brand": {
+      "name": "VP Brand",
+      "discord_handle": "vp-brand",
+      "avatar_emoji": "🎨",
+      "color": "#FF1493",
+      "channels": [
+        "marketing-sales",
+        "product-strategy"
+      ],
+      "triggers": [
+        "vp-brand",
+        "branding",
+        "messaging"
+      ],
+      "auto_respond": false,
+      "priority": "medium"
+    },
+    "vp-finance": {
+      "name": "VP Finance",
+      "discord_handle": "vp-finance",
+      "avatar_emoji": "💵",
+      "color": "#2E8B57",
+      "channels": [
+        "financial-ops",
+        "executive-suite"
+      ],
+      "triggers": [
+        "vp-finance",
+        "fp-a",
+        "forecasting"
+      ],
+      "auto_respond": false,
+      "priority": "medium"
+    },
+    "vp-people": {
+      "name": "VP People",
+      "discord_handle": "vp-people",
+      "avatar_emoji": "👥",
+      "color": "#FF69B4",
+      "channels": [
+        "executive-suite",
+        "company-announcements"
+      ],
+      "triggers": [
+        "vp-people",
+        "hiring",
+        "culture"
+      ],
+      "auto_respond": false,
+      "priority": "medium"
+    },
+    "head-ai-ml": {
+      "name": "Head AI/ML",
+      "discord_handle": "head-ai-ml",
+      "avatar_emoji": "🤖",
+      "color": "#00CED1",
+      "channels": [
+        "engineering-all",
+        "architecture",
+        "product-strategy"
+      ],
+      "triggers": [
+        "ai",
+        "ml",
+        "model",
+        "llm"
+      ],
+      "auto_respond": false,
+      "priority": "high"
+    },
+    "head-data": {
+      "name": "Head Data",
+      "discord_handle": "head-data",
+      "avatar_emoji": "📊",
+      "color": "#4169E1",
+      "channels": [
+        "engineering-all",
+        "product-strategy"
+      ],
+      "triggers": [
+        "data",
+        "analytics",
+        "pipeline"
+      ],
+      "auto_respond": false,
+      "priority": "medium"
+    },
+    "head-content": {
+      "name": "Head Content",
+      "discord_handle": "head-content",
+      "avatar_emoji": "✍️",
+      "color": "#DA70D6",
+      "channels": [
+        "marketing-sales",
+        "product-strategy"
+      ],
+      "triggers": [
+        "content",
+        "blog",
+        "documentation"
+      ],
+      "auto_respond": false,
+      "priority": "medium"
+    },
+    "head-devrel": {
+      "name": "Head DevRel",
+      "discord_handle": "head-devrel",
+      "avatar_emoji": "🎤",
+      "color": "#FF7F50",
+      "channels": [
+        "marketing-sales",
+        "engineering-all"
+      ],
+      "triggers": [
+        "devrel",
+        "developer-community",
+        "advocacy"
+      ],
+      "auto_respond": false,
+      "priority": "medium"
+    },
+    "qa": {
+      "name": "QA Engineer",
+      "discord_handle": "qa",
+      "avatar_emoji": "🧪",
+      "color": "#8FBC8F",
+      "channels": [
+        "dev-team",
+        "engineering-all"
+      ],
+      "triggers": [
+        "qa",
+        "testing",
+        "quality"
+      ],
+      "auto_respond": false,
+      "priority": "medium"
+    },
+    "revenue-ops": {
+      "name": "Revenue Ops",
+      "discord_handle": "revenue-ops",
+      "avatar_emoji": "💼",
+      "color": "#DAA520",
+      "channels": [
+        "marketing-sales",
+        "financial-ops"
+      ],
+      "triggers": [
+        "revenue",
+        "crm",
+        "pipeline"
+      ],
+      "auto_respond": false,
+      "priority": "medium"
+    },
+    "general-counsel": {
+      "name": "General Counsel",
+      "discord_handle": "general-counsel",
+      "avatar_emoji": "⚖️",
+      "color": "#2F4F4F",
+      "channels": [
+        "executive-suite",
+        "board-room"
+      ],
+      "triggers": [
+        "legal",
+        "contracts",
+        "compliance"
+      ],
+      "auto_respond": false,
+      "priority": "medium"
+    },
+    "coo": {
+      "name": "COO",
+      "discord_handle": "coo",
+      "avatar_emoji": "🎯",
+      "color": "#B8860B",
+      "channels": [
+        "executive-suite",
+        "project-status",
+        "company-announcements"
+      ],
+      "triggers": [
+        "coo",
+        "operations",
+        "process"
+      ],
+      "auto_respond": false,
+      "priority": "high"
+    },
+    "chief-of-staff": {
+      "name": "Chief of Staff",
+      "discord_handle": "chief-of-staff",
+      "avatar_emoji": "📝",
+      "color": "#BC8F8F",
+      "channels": [
+        "executive-suite",
+        "project-status"
+      ],
+      "triggers": [
+        "chief-of-staff",
+        "coordination",
+        "special-projects"
+      ],
+      "auto_respond": false,
+      "priority": "medium"
+    }
+  },
+  "routing": {
+    "mention_pattern": "@([a-z-]+)",
+    "keyword_match": "fuzzy",
+    "max_concurrent_agents": 10,
+    "response_timeout_seconds": 30,
+    "fallback_agent": "diana-ceo"
+  }
+}
